@@ -46,6 +46,11 @@
 #    endif
 #endif
 
+#ifdef __ANDROID__
+#    define __WXANDROID__
+#	 include "wx/android/config_android.h"
+#endif
+
 #if defined(_WIN64)
 #    ifndef _WIN32
         /*

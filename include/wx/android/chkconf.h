@@ -24,10 +24,7 @@
 // These are disabled because they are TODO. Or to decide whether to do or not.
 // ----------------------------------------------------------------------------
 
-#undef wxUSE_CONFIG
-#define wxUSE_CONFIG 0
-
-// This compiles, but not yet tested, so:
+// This compiles, but is probably not going to work, so:
 #undef wxUSE_CONSOLE_EVENTLOOP
 #define wxUSE_CONSOLE_EVENTLOOP 0
 
@@ -94,9 +91,6 @@
 
 #undef wxUSE_REGKEY
 #define wxUSE_REGKEY 0
-
-#undef wxUSE_SNGLINST_CHECKER
-#define wxUSE_SNGLINST_CHECKER 0
 
 #undef wxUSE_SOUND
 #define wxUSE_SOUND 0
@@ -167,6 +161,7 @@
 
 #undef wxUSE_LIBJPEG
 #define wxUSE_LIBJPEG       0
+// Although wxjpeg lib can be compiled!
 
 #undef wxUSE_LIBTIFF
 #define wxUSE_LIBTIFF       0
@@ -211,7 +206,8 @@
 #define wxUSE_CMDLINE_PARSER 0
 
 // No joystick on Android devices.
-// (What about using the direction sensor or the accelerometer?)
+// (What about using the direction sensor or the accelerometer?
+// And what about joysticks that use the capacitive touchscreen?)
 #undef wxUSE_JOYSTICK
 #define wxUSE_JOYSTICK 0
 
@@ -222,7 +218,7 @@
 #define wxUSE_MDI_ARCHITECTURE 0
 
 // No printing support on Android (2011).
-// Although 3rd party SDKs may exist (I know of one payware).
+// Although 3rd party SDKs may exist.
 #undef wxUSE_PRINTING_ARCHITECTURE
 #define wxUSE_PRINTING_ARCHITECTURE 0
 

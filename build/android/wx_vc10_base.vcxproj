@@ -1,0 +1,432 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Android">
+      <Configuration>Debug</Configuration>
+      <Platform>Android</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DLL Debug|Android">
+      <Configuration>DLL Debug</Configuration>
+      <Platform>Android</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DLL Release|Android">
+      <Configuration>DLL Release</Configuration>
+      <Platform>Android</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Android">
+      <Configuration>Release</Configuration>
+      <Platform>Android</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>base</ProjectName>
+    <ProjectGuid>{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL Release|Android'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Android'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Android'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Android'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DLL Release|Android'" Label="PropertySheets" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Android'" Label="PropertySheets" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Android'" Label="PropertySheets" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Android'" Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">..\..\lib\android_lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Android'">..\..\lib\android_lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Android'">..\..\lib\android_dll\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='DLL Release|Android'">..\..\lib\android_dll\</OutDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">wx$(ProjectName)d</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Android'">wx$(ProjectName)d</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DLL Release|Android'">wx$(ProjectName)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Android'">wx$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\lib\android_lib\androidud;..\..\include;..\..\src\tiff\libtiff;..\..\src\jpeg;..\..\src\png;..\..\src\zlib;..\..\src\regex;..\..\src\expat\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WXBUILDING;wxUSE_GUI=0;wxUSE_BASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GccExceptionHandling>true</GccExceptionHandling>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <PreBuildEvent>
+      <Command>mkdir $(OutDir)androidud\wx
+copy "..\..\include\wx\android\setup.h" "$(OutDir)androidud\wx\setup.h"</Command>
+      <Message>"$(OutDir)androidud\wx\setup.h"</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Android'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>..\..\lib\android_lib\androidu;..\..\include;..\..\src\tiff\libtiff;..\..\src\jpeg;..\..\src\png;..\..\src\zlib;..\..\src\regex;..\..\src\expat\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WXBUILDING;wxUSE_GUI=0;wxUSE_BASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GccExceptionHandling>true</GccExceptionHandling>
+    </ClCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <PreBuildEvent>
+      <Command>mkdir $(OutDir)androidu\wx
+copy "..\..\include\wx\android\setup.h" "$(OutDir)androidu\wx\setup.h"</Command>
+      <Message>"$(OutDir)androidu\wx\setup.h"</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Android'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\lib\android_lib\androidud;..\..\include;..\..\src\tiff\libtiff;..\..\src\jpeg;..\..\src\png;..\..\src\zlib;..\..\src\regex;..\..\src\expat\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_USRDLL;DLL_EXPORTS;_DEBUG;__WXMSW__;_UNICODE;WXBUILDING;wxUSE_GUI=0;WXMAKINGDLL_BASE;wxUSE_BASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GccExceptionHandling>true</GccExceptionHandling>
+    </ClCompile>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PreBuildEvent>
+      <Command>mkdir $(OutDir)androidud\wx
+copy "..\..\include\wx\android\setup.h" "$(OutDir)androidud\wx\setup.h"</Command>
+      <Message>"$(OutDir)androidud\wx\setup.h"</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DLL Release|Android'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>..\..\lib\android_lib\androidu;..\..\include;..\..\src\tiff\libtiff;..\..\src\jpeg;..\..\src\png;..\..\src\zlib;..\..\src\regex;..\..\src\expat\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_USRDLL;DLL_EXPORTS;__WXMSW__;NDEBUG;_UNICODE;WXBUILDING;wxUSE_GUI=0;WXMAKINGDLL_BASE;wxUSE_BASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GccExceptionHandling>true</GccExceptionHandling>
+    </ClCompile>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PreBuildEvent>
+      <Command>mkdir $(OutDir)androidu\wx
+copy "..\..\include\wx\android\setup.h" "$(OutDir)androidu\wx\setup.h"</Command>
+      <Message>"$(OutDir)androidu\wx\setup.h"</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\common\any.cpp" />
+    <ClCompile Include="..\..\src\common\appbase.cpp" />
+    <ClCompile Include="..\..\src\common\arcall.cpp" />
+    <ClCompile Include="..\..\src\common\arcfind.cpp" />
+    <ClCompile Include="..\..\src\common\archive.cpp" />
+    <ClCompile Include="..\..\src\common\arrstr.cpp" />
+    <ClCompile Include="..\..\src\common\base64.cpp" />
+    <ClCompile Include="..\..\src\common\clntdata.cpp" />
+    <ClCompile Include="..\..\src\common\cmdline.cpp" />
+    <ClCompile Include="..\..\src\common\config.cpp" />
+    <ClCompile Include="..\..\src\common\convauto.cpp" />
+    <ClCompile Include="..\..\src\common\datetime.cpp" />
+    <ClCompile Include="..\..\src\common\datetimefmt.cpp" />
+    <ClCompile Include="..\..\src\common\datstrm.cpp" />
+    <ClCompile Include="..\..\src\common\dircmn.cpp" />
+    <ClCompile Include="..\..\src\common\dummy.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Android'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DLL Release|Android'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Android'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\dynarray.cpp" />
+    <ClCompile Include="..\..\src\common\dynlib.cpp" />
+    <ClCompile Include="..\..\src\common\dynload.cpp" />
+    <ClCompile Include="..\..\src\common\encconv.cpp" />
+    <ClCompile Include="..\..\src\common\event.cpp" />
+    <ClCompile Include="..\..\src\common\evtloopcmn.cpp" />
+    <ClCompile Include="..\..\src\common\extended.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Android'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DLL Release|Android'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Android'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\common\fdiodispatcher.cpp" />
+    <ClCompile Include="..\..\src\common\ffile.cpp" />
+    <ClCompile Include="..\..\src\common\file.cpp" />
+    <ClCompile Include="..\..\src\common\fileback.cpp" />
+    <ClCompile Include="..\..\src\common\fileconf.cpp" />
+    <ClCompile Include="..\..\src\common\filefn.cpp" />
+    <ClCompile Include="..\..\src\common\filename.cpp" />
+    <ClCompile Include="..\..\src\common\filesys.cpp" />
+    <ClCompile Include="..\..\src\common\filtall.cpp" />
+    <ClCompile Include="..\..\src\common\filtfind.cpp" />
+    <ClCompile Include="..\..\src\common\fmapbase.cpp" />
+    <ClCompile Include="..\..\src\common\fs_arc.cpp" />
+    <ClCompile Include="..\..\src\common\fs_filter.cpp" />
+    <ClCompile Include="..\..\src\common\fs_mem.cpp" />
+    <ClCompile Include="..\..\src\common\fswatchercmn.cpp" />
+    <ClCompile Include="..\..\src\common\hash.cpp" />
+    <ClCompile Include="..\..\src\common\hashmap.cpp" />
+    <ClCompile Include="..\..\src\common\init.cpp" />
+    <ClCompile Include="..\..\src\common\intl.cpp" />
+    <ClCompile Include="..\..\src\common\ipcbase.cpp" />
+    <ClCompile Include="..\..\src\common\languageinfo.cpp" />
+    <ClCompile Include="..\..\src\common\list.cpp" />
+    <ClCompile Include="..\..\src\common\log.cpp" />
+    <ClCompile Include="..\..\src\common\longlong.cpp" />
+    <ClCompile Include="..\..\src\common\memory.cpp" />
+    <ClCompile Include="..\..\src\common\mimecmn.cpp" />
+    <ClCompile Include="..\..\src\common\module.cpp" />
+    <ClCompile Include="..\..\src\common\msgout.cpp" />
+    <ClCompile Include="..\..\src\common\mstream.cpp" />
+    <ClCompile Include="..\..\src\common\numformatter.cpp" />
+    <ClCompile Include="..\..\src\common\object.cpp" />
+    <ClCompile Include="..\..\src\common\platinfo.cpp" />
+    <ClCompile Include="..\..\src\common\powercmn.cpp" />
+    <ClCompile Include="..\..\src\common\process.cpp" />
+    <ClCompile Include="..\..\src\common\regex.cpp" />
+    <ClCompile Include="..\..\src\common\selectdispatcher.cpp" />
+    <ClCompile Include="..\..\src\common\sstream.cpp" />
+    <ClCompile Include="..\..\src\common\stdpbase.cpp" />
+    <ClCompile Include="..\..\src\common\stdstream.cpp" />
+    <ClCompile Include="..\..\src\common\stopwatch.cpp" />
+    <ClCompile Include="..\..\src\common\strconv.cpp" />
+    <ClCompile Include="..\..\src\common\stream.cpp" />
+    <ClCompile Include="..\..\src\common\string.cpp" />
+    <ClCompile Include="..\..\src\common\stringimpl.cpp" />
+    <ClCompile Include="..\..\src\common\stringops.cpp" />
+    <ClCompile Include="..\..\src\common\strvararg.cpp" />
+    <ClCompile Include="..\..\src\common\sysopt.cpp" />
+    <ClCompile Include="..\..\src\common\tarstrm.cpp" />
+    <ClCompile Include="..\..\src\common\textbuf.cpp" />
+    <ClCompile Include="..\..\src\common\textfile.cpp" />
+    <ClCompile Include="..\..\src\common\time.cpp" />
+    <ClCompile Include="..\..\src\common\timercmn.cpp" />
+    <ClCompile Include="..\..\src\common\timerimpl.cpp" />
+    <ClCompile Include="..\..\src\common\tokenzr.cpp" />
+    <ClCompile Include="..\..\src\common\translation.cpp" />
+    <ClCompile Include="..\..\src\common\txtstrm.cpp" />
+    <ClCompile Include="..\..\src\common\unichar.cpp" />
+    <ClCompile Include="..\..\src\common\uri.cpp" />
+    <ClCompile Include="..\..\src\common\ustring.cpp" />
+    <ClCompile Include="..\..\src\common\utilscmn.cpp" />
+    <ClCompile Include="..\..\src\common\variant.cpp" />
+    <ClCompile Include="..\..\src\common\wfstream.cpp" />
+    <ClCompile Include="..\..\src\common\wxcrt.cpp" />
+    <ClCompile Include="..\..\src\common\wxprintf.cpp" />
+    <ClCompile Include="..\..\src\common\xlocale.cpp" />
+    <ClCompile Include="..\..\src\common\xti.cpp" />
+    <ClCompile Include="..\..\src\common\xtistrm.cpp" />
+    <ClCompile Include="..\..\src\common\zipstrm.cpp" />
+    <ClCompile Include="..\..\src\common\zstream.cpp" />
+    <ClCompile Include="..\..\src\generic\fswatcherg.cpp" />
+    <ClCompile Include="..\..\src\unix\appunix.cpp" />
+    <ClCompile Include="..\..\src\unix\dialup.cpp" />
+    <ClCompile Include="..\..\src\unix\dir.cpp" />
+    <ClCompile Include="..\..\src\unix\dlunix.cpp" />
+    <ClCompile Include="..\..\src\unix\epolldispatcher.cpp" />
+    <ClCompile Include="..\..\src\unix\evtloopunix.cpp" />
+    <ClCompile Include="..\..\src\unix\fdiounix.cpp" />
+    <ClCompile Include="..\..\src\unix\fswatcher_inotify.cpp" />
+    <ClCompile Include="..\..\src\unix\fswatcher_kqueue.cpp" />
+    <ClCompile Include="..\..\src\unix\joystick.cpp" />
+    <ClCompile Include="..\..\src\unix\mediactrl.cpp" />
+    <ClCompile Include="..\..\src\unix\mimetype.cpp" />
+    <ClCompile Include="..\..\src\unix\snglinst.cpp" />
+    <ClCompile Include="..\..\src\unix\sound.cpp" />
+    <ClCompile Include="..\..\src\unix\sound_sdl.cpp" />
+    <ClCompile Include="..\..\src\unix\stackwalk.cpp" />
+    <ClCompile Include="..\..\src\unix\stdpaths.cpp" />
+    <ClCompile Include="..\..\src\unix\threadpsx.cpp" />
+    <ClCompile Include="..\..\src\unix\timerunx.cpp" />
+    <ClCompile Include="..\..\src\unix\utilsunx.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\wx\generic\fswatcher.h" />
+    <ClInclude Include="..\..\include\wx\html\forcelnk.h" />
+    <ClInclude Include="..\..\include\wx\afterstd.h" />
+    <ClInclude Include="..\..\include\wx\any.h" />
+    <ClInclude Include="..\..\include\wx\anystr.h" />
+    <ClInclude Include="..\..\include\wx\app.h" />
+    <ClInclude Include="..\..\include\wx\apptrait.h" />
+    <ClInclude Include="..\..\include\wx\archive.h" />
+    <ClInclude Include="..\..\include\wx\arrstr.h" />
+    <ClInclude Include="..\..\include\wx\atomic.h" />
+    <ClInclude Include="..\..\include\wx\base64.h" />
+    <ClInclude Include="..\..\include\wx\beforestd.h" />
+    <ClInclude Include="..\..\include\wx\buffer.h" />
+    <ClInclude Include="..\..\include\wx\build.h" />
+    <ClInclude Include="..\..\include\wx\chartype.h" />
+    <ClInclude Include="..\..\include\wx\checkeddelete.h" />
+    <ClInclude Include="..\..\include\wx\chkconf.h" />
+    <ClInclude Include="..\..\include\wx\clntdata.h" />
+    <ClInclude Include="..\..\include\wx\cmdargs.h" />
+    <ClInclude Include="..\..\include\wx\cmdline.h" />
+    <ClInclude Include="..\..\include\wx\confbase.h" />
+    <ClInclude Include="..\..\include\wx\config.h" />
+    <ClInclude Include="..\..\include\wx\containr.h" />
+    <ClInclude Include="..\..\include\wx\convauto.h" />
+    <ClInclude Include="..\..\include\wx\meta\convertible.h" />
+    <ClInclude Include="..\..\include\wx\cpp.h" />
+    <ClInclude Include="..\..\include\wx\crt.h" />
+    <ClInclude Include="..\..\include\wx\datetime.h" />
+    <ClInclude Include="..\..\include\wx\datstrm.h" />
+    <ClInclude Include="..\..\include\wx\dde.h" />
+    <ClInclude Include="..\..\include\wx\debug.h" />
+    <ClInclude Include="..\..\include\wx\defs.h" />
+    <ClInclude Include="..\..\include\wx\dir.h" />
+    <ClInclude Include="..\..\include\wx\dlimpexp.h" />
+    <ClInclude Include="..\..\include\wx\dlist.h" />
+    <ClInclude Include="..\..\include\wx\dynarray.h" />
+    <ClInclude Include="..\..\include\wx\dynlib.h" />
+    <ClInclude Include="..\..\include\wx\dynload.h" />
+    <ClInclude Include="..\..\include\wx\encconv.h" />
+    <ClInclude Include="..\..\include\wx\event.h" />
+    <ClInclude Include="..\..\include\wx\evtloop.h" />
+    <ClInclude Include="..\..\include\wx\except.h" />
+    <ClInclude Include="..\..\include\wx\features.h" />
+    <ClInclude Include="..\..\include\wx\ffile.h" />
+    <ClInclude Include="..\..\include\wx\file.h" />
+    <ClInclude Include="..\..\include\wx\fileconf.h" />
+    <ClInclude Include="..\..\include\wx\filefn.h" />
+    <ClInclude Include="..\..\include\wx\filename.h" />
+    <ClInclude Include="..\..\include\wx\filesys.h" />
+    <ClInclude Include="..\..\include\wx\flags.h" />
+    <ClInclude Include="..\..\include\wx\fontenc.h" />
+    <ClInclude Include="..\..\include\wx\fontmap.h" />
+    <ClInclude Include="..\..\include\wx\fs_arc.h" />
+    <ClInclude Include="..\..\include\wx\fs_filter.h" />
+    <ClInclude Include="..\..\include\wx\fs_mem.h" />
+    <ClInclude Include="..\..\include\wx\fs_zip.h" />
+    <ClInclude Include="..\..\include\wx\fswatcher.h" />
+    <ClInclude Include="..\..\include\wx\hash.h" />
+    <ClInclude Include="..\..\include\wx\hashmap.h" />
+    <ClInclude Include="..\..\include\wx\hashset.h" />
+    <ClInclude Include="..\..\include\wx\iconloc.h" />
+    <ClInclude Include="..\..\include\wx\meta\if.h" />
+    <ClInclude Include="..\..\include\wx\meta\implicitconversion.h" />
+    <ClInclude Include="..\..\include\wx\init.h" />
+    <ClInclude Include="..\..\include\wx\meta\int2type.h" />
+    <ClInclude Include="..\..\include\wx\intl.h" />
+    <ClInclude Include="..\..\include\wx\iosfwrap.h" />
+    <ClInclude Include="..\..\include\wx\ioswrap.h" />
+    <ClInclude Include="..\..\include\wx\ipc.h" />
+    <ClInclude Include="..\..\include\wx\ipcbase.h" />
+    <ClInclude Include="..\..\include\wx\kbdstate.h" />
+    <ClInclude Include="..\..\include\wx\language.h" />
+    <ClInclude Include="..\..\include\wx\link.h" />
+    <ClInclude Include="..\..\include\wx\list.h" />
+    <ClInclude Include="..\..\include\wx\log.h" />
+    <ClInclude Include="..\..\include\wx\longlong.h" />
+    <ClInclude Include="..\..\include\wx\math.h" />
+    <ClInclude Include="..\..\include\wx\memconf.h" />
+    <ClInclude Include="..\..\include\wx\memory.h" />
+    <ClInclude Include="..\..\include\wx\memtext.h" />
+    <ClInclude Include="..\..\include\wx\mimetype.h" />
+    <ClInclude Include="..\..\include\wx\module.h" />
+    <ClInclude Include="..\..\include\wx\mousestate.h" />
+    <ClInclude Include="..\..\include\wx\meta\movable.h" />
+    <ClInclude Include="..\..\include\wx\msgout.h" />
+    <ClInclude Include="..\..\include\wx\msgqueue.h" />
+    <ClInclude Include="..\..\include\wx\mstream.h" />
+    <ClInclude Include="..\..\include\wx\numformatter.h" />
+    <ClInclude Include="..\..\include\wx\object.h" />
+    <ClInclude Include="..\..\include\wx\platform.h" />
+    <ClInclude Include="..\..\include\wx\platinfo.h" />
+    <ClInclude Include="..\..\include\wx\meta\pod.h" />
+    <ClInclude Include="..\..\include\wx\power.h" />
+    <ClInclude Include="..\..\include\wx\process.h" />
+    <ClInclude Include="..\..\include\wx\ptr_scpd.h" />
+    <ClInclude Include="..\..\include\wx\ptr_shrd.h" />
+    <ClInclude Include="..\..\include\wx\recguard.h" />
+    <ClInclude Include="..\..\include\wx\regex.h" />
+    <ClInclude Include="..\..\include\wx\rtti.h" />
+    <ClInclude Include="..\..\include\wx\scopedarray.h" />
+    <ClInclude Include="..\..\include\wx\scopedptr.h" />
+    <ClInclude Include="..\..\include\wx\scopeguard.h" />
+    <ClInclude Include="..\..\include\wx\sharedptr.h" />
+    <ClInclude Include="..\..\include\wx\snglinst.h" />
+    <ClInclude Include="..\..\include\wx\sstream.h" />
+    <ClInclude Include="..\..\include\wx\stack.h" />
+    <ClInclude Include="..\..\include\wx\stackwalk.h" />
+    <ClInclude Include="..\..\include\wx\stdpaths.h" />
+    <ClInclude Include="..\..\include\wx\stdstream.h" />
+    <ClInclude Include="..\..\include\wx\stockitem.h" />
+    <ClInclude Include="..\..\include\wx\stopwatch.h" />
+    <ClInclude Include="..\..\include\wx\strconv.h" />
+    <ClInclude Include="..\..\include\wx\stream.h" />
+    <ClInclude Include="..\..\include\wx\string.h" />
+    <ClInclude Include="..\..\include\wx\stringimpl.h" />
+    <ClInclude Include="..\..\include\wx\stringops.h" />
+    <ClInclude Include="..\..\include\wx\strvararg.h" />
+    <ClInclude Include="..\..\include\wx\sysopt.h" />
+    <ClInclude Include="..\..\include\wx\tarstrm.h" />
+    <ClInclude Include="..\..\include\wx\textbuf.h" />
+    <ClInclude Include="..\..\include\wx\textfile.h" />
+    <ClInclude Include="..\..\include\wx\thread.h" />
+    <ClInclude Include="..\..\include\wx\timer.h" />
+    <ClInclude Include="..\..\include\wx\tls.h" />
+    <ClInclude Include="..\..\include\wx\tokenzr.h" />
+    <ClInclude Include="..\..\include\wx\tracker.h" />
+    <ClInclude Include="..\..\include\wx\translation.h" />
+    <ClInclude Include="..\..\include\wx\txtstrm.h" />
+    <ClInclude Include="..\..\include\wx\typeinfo.h" />
+    <ClInclude Include="..\..\include\wx\types.h" />
+    <ClInclude Include="..\..\include\wx\unichar.h" />
+    <ClInclude Include="..\..\include\wx\uri.h" />
+    <ClInclude Include="..\..\include\wx\ustring.h" />
+    <ClInclude Include="..\..\include\wx\utils.h" />
+    <ClInclude Include="..\..\include\wx\variant.h" />
+    <ClInclude Include="..\..\include\wx\vector.h" />
+    <ClInclude Include="..\..\include\wx\version.h" />
+    <ClInclude Include="..\..\include\wx\versioninfo.h" />
+    <ClInclude Include="..\..\include\wx\volume.h" />
+    <ClInclude Include="..\..\include\wx\weakref.h" />
+    <ClInclude Include="..\..\include\wx\wfstream.h" />
+    <ClInclude Include="..\..\include\wx\wx.h" />
+    <ClInclude Include="..\..\include\wx\wxchar.h" />
+    <ClInclude Include="..\..\include\wx\wxcrt.h" />
+    <ClInclude Include="..\..\include\wx\wxcrtbase.h" />
+    <ClInclude Include="..\..\include\wx\wxcrtvararg.h" />
+    <ClInclude Include="..\..\include\wx\wxprec.h" />
+    <ClInclude Include="..\..\include\wx\xlocale.h" />
+    <ClInclude Include="..\..\include\wx\xti.h" />
+    <ClInclude Include="..\..\include\wx\xti2.h" />
+    <ClInclude Include="..\..\include\wx\xtictor.h" />
+    <ClInclude Include="..\..\include\wx\xtihandler.h" />
+    <ClInclude Include="..\..\include\wx\xtiprop.h" />
+    <ClInclude Include="..\..\include\wx\xtistrm.h" />
+    <ClInclude Include="..\..\include\wx\xtitypes.h" />
+    <ClInclude Include="..\..\include\wx\zipstrm.h" />
+    <ClInclude Include="..\..\include\wx\zstream.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -32,19 +32,23 @@
 #define HAVE_THREAD_PRIORITY_FUNCTIONS 1
 #define HAVE_SSIZE_T 1
 #define HAVE_STRCASECMP_IN_STRING_H 1
-#define HAVE_WPRINTF 1
+
+// Android's wchar_t support is, well, incomplete...
+#define HAVE_WPRINTF 0
 
 #define SIZEOF_INT 4
 #define SIZEOF_LONG 4
 #define SIZEOF_LONG_LONG 8
 #define SIZEOF_SIZE_T 4
 #define SIZEOF_VOID_P 4
+// TODO: if target is android-8 or earlier, then SIZEOF_WCHAR_T = 1
 #define SIZEOF_WCHAR_T 4
 
 #define wxHAVE_PTHREAD_CLEANUP 1
 #define wxNO_WOSTREAM
 #define wxSIZE_T_IS_UINT 1
 #define wxWCHAR_T_IS_REAL_TYPE 1
+#define WX_GMTOFF_IN_TM 1
 
 #define wxTYPE_SA_HANDLER int
 

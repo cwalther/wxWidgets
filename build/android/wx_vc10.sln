@@ -1,0 +1,55 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "wx_vc10_base.vcxproj", "{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "net", "wx_vc10_net.vcxproj", "{69F2EDE4-7D21-5738-9BC0-F66F61C9AE00}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xml", "wx_vc10_xml.vcxproj", "{3E6DCA27-5FA3-53EC-BBD6-2D42294B7AE6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxjpeg", "wx_vc10_wxjpeg.vcxproj", "{6053CC38-CDEE-584C-8BC8-4B000D800FC7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Android = Debug|Android
+		DLL Debug|Android = DLL Debug|Android
+		DLL Release|Android = DLL Release|Android
+		Release|Android = Release|Android
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}.Debug|Android.ActiveCfg = Debug|Android
+		{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}.Debug|Android.Build.0 = Debug|Android
+		{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}.DLL Debug|Android.ActiveCfg = DLL Debug|Android
+		{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}.DLL Debug|Android.Build.0 = DLL Debug|Android
+		{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}.DLL Release|Android.ActiveCfg = DLL Release|Android
+		{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}.DLL Release|Android.Build.0 = DLL Release|Android
+		{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}.Release|Android.ActiveCfg = Release|Android
+		{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}.Release|Android.Build.0 = Release|Android
+		{69F2EDE4-7D21-5738-9BC0-F66F61C9AE00}.Debug|Android.ActiveCfg = Debug|Android
+		{69F2EDE4-7D21-5738-9BC0-F66F61C9AE00}.Debug|Android.Build.0 = Debug|Android
+		{69F2EDE4-7D21-5738-9BC0-F66F61C9AE00}.DLL Debug|Android.ActiveCfg = DLL Debug|Android
+		{69F2EDE4-7D21-5738-9BC0-F66F61C9AE00}.DLL Debug|Android.Build.0 = DLL Debug|Android
+		{69F2EDE4-7D21-5738-9BC0-F66F61C9AE00}.DLL Release|Android.ActiveCfg = DLL Release|Android
+		{69F2EDE4-7D21-5738-9BC0-F66F61C9AE00}.DLL Release|Android.Build.0 = DLL Release|Android
+		{69F2EDE4-7D21-5738-9BC0-F66F61C9AE00}.Release|Android.ActiveCfg = Release|Android
+		{69F2EDE4-7D21-5738-9BC0-F66F61C9AE00}.Release|Android.Build.0 = Release|Android
+		{3E6DCA27-5FA3-53EC-BBD6-2D42294B7AE6}.Debug|Android.ActiveCfg = Debug|Android
+		{3E6DCA27-5FA3-53EC-BBD6-2D42294B7AE6}.Debug|Android.Build.0 = Debug|Android
+		{3E6DCA27-5FA3-53EC-BBD6-2D42294B7AE6}.DLL Debug|Android.ActiveCfg = DLL Debug|Android
+		{3E6DCA27-5FA3-53EC-BBD6-2D42294B7AE6}.DLL Debug|Android.Build.0 = DLL Debug|Android
+		{3E6DCA27-5FA3-53EC-BBD6-2D42294B7AE6}.DLL Release|Android.ActiveCfg = DLL Release|Android
+		{3E6DCA27-5FA3-53EC-BBD6-2D42294B7AE6}.DLL Release|Android.Build.0 = DLL Release|Android
+		{3E6DCA27-5FA3-53EC-BBD6-2D42294B7AE6}.Release|Android.ActiveCfg = Release|Android
+		{3E6DCA27-5FA3-53EC-BBD6-2D42294B7AE6}.Release|Android.Build.0 = Release|Android
+		{6053CC38-CDEE-584C-8BC8-4B000D800FC7}.Debug|Android.ActiveCfg = Debug|Android
+		{6053CC38-CDEE-584C-8BC8-4B000D800FC7}.Debug|Android.Build.0 = Debug|Android
+		{6053CC38-CDEE-584C-8BC8-4B000D800FC7}.DLL Debug|Android.ActiveCfg = DLL Debug|Android
+		{6053CC38-CDEE-584C-8BC8-4B000D800FC7}.DLL Debug|Android.Build.0 = DLL Debug|Android
+		{6053CC38-CDEE-584C-8BC8-4B000D800FC7}.DLL Release|Android.ActiveCfg = DLL Release|Android
+		{6053CC38-CDEE-584C-8BC8-4B000D800FC7}.DLL Release|Android.Build.0 = DLL Release|Android
+		{6053CC38-CDEE-584C-8BC8-4B000D800FC7}.Release|Android.ActiveCfg = Release|Android
+		{6053CC38-CDEE-584C-8BC8-4B000D800FC7}.Release|Android.Build.0 = Release|Android
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

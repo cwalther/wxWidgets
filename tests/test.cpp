@@ -293,8 +293,10 @@ public:
     TestApp();
 
     // standard overrides
+#if wxUSE_CMDLINE_PARSER
     virtual void OnInitCmdLine(wxCmdLineParser& parser);
     virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
+#endif
     virtual bool OnInit();
     virtual int  OnRun();
     virtual int  OnExit();
@@ -324,7 +326,9 @@ private:
     bool m_detail;
     bool m_timing;
     wxArrayString m_registries;
+#if wxUSE_INTL
     wxLocale *m_locale;
+#endif
 
     // event loop for GUI tests
     wxEventLoop* m_eventloop;
@@ -443,8 +447,9 @@ TestApp::TestApp()
 {
     m_filterEventFunc = NULL;
     m_processEventFunc = NULL;
-
+#if wxUSE_INTL
     m_locale = NULL;
+#endif
     m_eventloop = NULL;
 }
 
@@ -473,6 +478,8 @@ bool TestApp::OnInit()
 
     return true;
 }
+
+#if wxUSE_CMDLINE_PARSER
 
 // The table of command line options
 //
@@ -528,17 +535,20 @@ bool TestApp::OnCmdLineParsed(wxCmdLineParser& parser)
             cerr << "Locale \"" << string(loc.mb_str()) << "\" is unknown.\n";
             return false;
         }
-
+#if wxUSE_INTL
         m_locale = new wxLocale(info->Language);
         if ( !m_locale->IsOk() )
         {
             cerr << "Using locale \"" << string(loc.mb_str()) << "\" failed.\n";
             return false;
         }
+#endif
     }
 
     return TestAppBase::OnCmdLineParsed(parser);
 }
+
+#endif // wxUSE_CMDLINE_PARSER
 
 // Event handling
 int TestApp::FilterEvent(wxEvent& event)
@@ -643,7 +653,9 @@ int TestApp::OnRun()
 
 int TestApp::OnExit()
 {
+#if wxUSE_INTL
     delete m_locale;
+#endif
 
 #if wxUSE_GUI
     delete GetTopWindow();

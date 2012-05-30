@@ -3,7 +3,7 @@
 // Purpose:     Configuration for the universal build of the library
 // Author:      Julian Smart
 // Created:     01/02/97
-// RCS-ID:      $Id: setup0.h 69463 2011-10-18 21:57:02Z VZ $
+// RCS-ID:      $Id$
 // Copyright:   (c) Julian Smart
 // Licence:     wxWindows licence
 /////////////////////////////////////////////////////////////////////////////
@@ -1641,5 +1641,16 @@
 #define wxUSE_THEME_MONO    0
 #define wxUSE_THEME_WIN32   0
 /* --- end wxUniv options --- */
+
+
+/* --- start wxAndroid options --- */
+// ----------------------------------------------------------------------------
+// wxAndroid-only options
+// ----------------------------------------------------------------------------
+
+//#define wxUSE_UNICODE_UTF8    1
+//#define wxUSE_UTF8_LOCALE_ONLY 1
+
+/* --- end wxAndroid options --- */
 
 #endif // _WX_SETUP_H_
