@@ -570,6 +570,10 @@ WXDLLIMPEXP_BASE wchar_t * wxCRT_GetenvW(const wchar_t *name);
         #define wxNEED_WX_MBSTOWCS
     #endif
 #endif
+#ifdef __ANDROID__
+    /* Android's mbstowcs/wcstombs is essentially memcpy, thus unusable */
+    #define wxNEED_WX_MBSTOWCS
+#endif
 
 #ifdef wxNEED_WX_MBSTOWCS
     /* even though they are defined and "implemented", they are bad and just
