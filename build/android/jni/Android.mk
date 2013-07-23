@@ -14,9 +14,7 @@ MY_CFLAGS_RELEASE := $(MY_CFLAGS) -DNDEBUG
 MY_CPP_FEATURES := rtti exceptions
 MY_LDLIBS := -lGLESv1_CM -ldl -llog
 MY_C_INCLUDES := \
-    $(LOCAL_PATH)/../include \
-    $(NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/include \
-    $(NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/libs/$(TARGET_ARCH_ABI)/include
+    $(LOCAL_PATH)/../include
 MY_C_INCLUDES_DEBUG := $(MY_C_INCLUDES) $(LOCAL_PATH)/../lib/android_lib/androidud
 MY_C_INCLUDES_RELEASE := $(MY_C_INCLUDES) $(LOCAL_PATH)/../lib/android_lib/androidu
 MY_SRC_FILES_WXBASE := \

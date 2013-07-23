@@ -10,9 +10,7 @@ MY_STATIC_LIBS_DEBUG := wxjpegd wxnetd wxbased cppunit
 MY_STATIC_LIBS_RELEASE := wxjpeg wxnet wxbase cppunit
 MY_C_INCLUDES := \
     ../include \
-    ../../cppunit/cppunit/include \
-    $(NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/include \
-    $(NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/libs/$(TARGET_ARCH_ABI)/include
+    ../../cppunit/cppunit/include
 MY_C_INCLUDES_DEBUG := $(MY_C_INCLUDES) ../lib/android_lib/androidud
 MY_C_INCLUDES_RELEASE := $(MY_C_INCLUDES) ../lib/android_lib/androidu
 
