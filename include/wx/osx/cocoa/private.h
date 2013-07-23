@@ -42,6 +42,7 @@ OSStatus WXDLLIMPEXP_CORE wxMacDrawCGImage(
 WX_NSImage WXDLLIMPEXP_CORE wxOSXGetNSImageFromCGImage( CGImageRef image );
 CGImageRef WXDLLIMPEXP_CORE wxOSXCreateCGImageFromNSImage( WX_NSImage nsimage );
 wxBitmap WXDLLIMPEXP_CORE wxOSXCreateSystemBitmap(const wxString& id, const wxString &client, const wxSize& size);
+WXWindow WXDLLIMPEXP_CORE wxOSXGetMainWindow();
 
 class WXDLLIMPEXP_FWD_CORE wxDialog;
 
@@ -104,6 +105,8 @@ public :
     void                CaptureMouse();
     void                ReleaseMouse();
 
+    void                SetDropTarget(wxDropTarget* target);
+    
     wxInt32             GetValue() const;
     void                SetValue( wxInt32 v );
     wxBitmap            GetBitmap() const;

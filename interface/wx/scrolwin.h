@@ -535,8 +535,28 @@ public:
     double GetScaleY() const;
 
     virtual void AdjustScrollbars();
+
+    /**
+       Are we generating the autoscroll events?
+     */
     bool IsAutoScrolling() const;
+
+    /**
+       Stop generating the scroll events when mouse is held outside the
+       window.
+     */
     void StopAutoScrolling();
+    
+    /**
+       This method can be overridden in a derived class to forbid sending the
+       auto scroll events - note that unlike StopAutoScrolling() it doesn't
+       stop the timer, so it will be called repeatedly and will typically
+       return different values depending on the current mouse position
+    
+       The base class version just returns true.
+    */
+    virtual bool SendAutoScrollEvents(wxScrollWinEvent& event) const;
+
 
 protected:
     /**
@@ -558,7 +578,7 @@ protected:
 /**
     Scrolled window derived from wxPanel.
 
-    See wxScrolled for detailed description.
+    See wxScrolled for a detailed description.
 
     @note Note that because this class derives from wxPanel, it shares its
           behaviour with regard to TAB traversal and focus handling (in

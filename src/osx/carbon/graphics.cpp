@@ -148,26 +148,14 @@ OSStatus wxMacDrawCGImage(
 CGColorRef wxMacCreateCGColor( const wxColour& col )
 {
     CGColorRef retval = 0;
-#ifdef __WXMAC__
-    retval = col.CreateCGColor();
-#else
-// TODO add conversion NSColor - CGColorRef (obj-c)
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-    if ( CGColorCreateGenericRGB )
-        retval = CGColorCreateGenericRGB( col.Red() / 255.0 , col.Green() / 255.0, col.Blue() / 255.0, col.Alpha() / 255.0 );
-    else
-#endif
-    {
-        CGFloat components[4] = { col.Red() / 255.0, col.Green() / 255.0, col.Blue()  / 255.0, col.Alpha() / 255.0 } ;
-        retval = CGColorCreate( wxMacGetGenericRGBColorSpace() , components ) ;
-    }
 
-#endif
+    retval = col.CreateCGColor();
+
     wxASSERT(retval != NULL);
     return retval;
 }
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && wxOSX_USE_CORE_TEXT
+#if wxOSX_USE_CORE_TEXT
 
 CTFontRef wxMacCreateCTFont( const wxFont& font )
 {
@@ -1846,8 +1834,8 @@ bool wxMacCoreGraphicsContext::SetCompositionMode(wxCompositionMode op)
     if (m_composition == wxCOMPOSITION_DEST)
         return true;
 
-#if wxOSX_USE_COCOA_OR_CARBON
-    if ( UMAGetSystemVersion() < 0x1060 )
+    // TODO REMOVE if we don't need it because of bugs in 10.5
+#if 0
     {
         CGCompositeOperation cop = kCGCompositeOperationSourceOver;
         CGBlendMode mode = kCGBlendModeNormal;
@@ -1886,11 +1874,9 @@ bool wxMacCoreGraphicsContext::SetCompositionMode(wxCompositionMode op)
         case wxCOMPOSITION_XOR:
             cop = kCGCompositeOperationXOR;
             break;
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
         case wxCOMPOSITION_ADD:
             mode = kCGBlendModePlusLighter ;
             break;
-#endif
         default:
             return false;
         }
@@ -1900,8 +1886,6 @@ bool wxMacCoreGraphicsContext::SetCompositionMode(wxCompositionMode op)
             CGContextSetBlendMode(m_cgContext, mode);
     }
 #endif
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
-    else
     {
         CGBlendMode mode = kCGBlendModeNormal;
         switch( op )
@@ -1948,7 +1932,7 @@ bool wxMacCoreGraphicsContext::SetCompositionMode(wxCompositionMode op)
         }
         CGContextSetBlendMode(m_cgContext, mode);
     }
-#endif
+
     CheckInvariants();
     return true;
 }
@@ -2289,11 +2273,11 @@ void wxMacCoreGraphicsContext::DrawIcon( const wxIcon &icon, wxDouble x, wxDoubl
     if (m_composition == wxCOMPOSITION_DEST)
         return;
 
-    CGRect r = CGRectMake( (CGFloat) 0.0 , (CGFloat) 0.0 , (CGFloat) w , (CGFloat) h );
     CGContextSaveGState( m_cgContext );
     CGContextTranslateCTM( m_cgContext,(CGFloat) x ,(CGFloat) (y + h) );
     CGContextScaleCTM( m_cgContext, 1, -1 );
 #if wxOSX_USE_COCOA_OR_CARBON
+    CGRect r = CGRectMake( (CGFloat) 0.0 , (CGFloat) 0.0 , (CGFloat) w , (CGFloat) h );
     PlotIconRefInContext( m_cgContext , &r , kAlignNone , kTransformNone ,
         NULL , kPlotIconRefNormalFlags , icon.GetHICON() );
 #endif
@@ -2329,7 +2313,6 @@ void wxMacCoreGraphicsContext::DoDrawText( const wxString &str, wxDouble x, wxDo
         return;
 
 #if wxOSX_USE_CORE_TEXT
-    if ( UMAGetSystemVersion() >= 0x1050 )
     {
         wxMacCoreGraphicsFontData* fref = (wxMacCoreGraphicsFontData*)m_font.GetRefData();
         wxCFStringRef text(str, wxLocale::GetSystemEncoding() );
@@ -2375,7 +2358,7 @@ void wxMacCoreGraphicsContext::DoDrawText( const wxString &str, wxDouble x, wxDo
         
         CGContextRestoreGState(m_cgContext);
         CGContextSetTextMatrix(m_cgContext, textMatrix);
-        CFRelease( col );
+        CGColorRelease( col );
         CheckInvariants();
         return;
     }
@@ -2418,7 +2401,6 @@ void wxMacCoreGraphicsContext::DoDrawRotatedText(const wxString &str,
         return;
 
 #if wxOSX_USE_CORE_TEXT
-    if ( UMAGetSystemVersion() >= 0x1050 )
     {
         // default implementation takes care of rotation and calls non rotated DrawText afterwards
         wxGraphicsContext::DoDrawRotatedText( str, x, y, angle );
@@ -2536,7 +2518,6 @@ void wxMacCoreGraphicsContext::GetTextExtent( const wxString &str, wxDouble *wid
         return;
 
 #if wxOSX_USE_CORE_TEXT
-    if ( UMAGetSystemVersion() >= 0x1050 )
     {
         wxMacCoreGraphicsFontData* fref = (wxMacCoreGraphicsFontData*)m_font.GetRefData();
         CTFontRef font = fref->OSXGetCTFont();

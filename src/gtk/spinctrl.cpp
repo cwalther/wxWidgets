@@ -21,7 +21,9 @@
     #include "wx/wxcrtvararg.h"
 #endif
 
+#include <gtk/gtk.h>
 #include "wx/gtk/private.h"
+#include "wx/gtk/private/gtk2-compat.h"
 
 //-----------------------------------------------------------------------------
 // data
@@ -195,7 +197,7 @@ bool wxSpinCtrlGTKBase::GetSnapToTicks() const
 {
     wxCHECK_MSG(m_widget, false, "invalid spin button");
 
-    return gtk_spin_button_get_snap_to_ticks( GTK_SPIN_BUTTON(m_widget) );
+    return gtk_spin_button_get_snap_to_ticks( GTK_SPIN_BUTTON(m_widget) ) != 0;
 }
 
 void wxSpinCtrlGTKBase::SetValue( const wxString& value )
@@ -325,10 +327,15 @@ void wxSpinCtrlGTKBase::OnChar( wxKeyEvent &event )
 
 GdkWindow *wxSpinCtrlGTKBase::GTKGetWindow(wxArrayGdkWindows& windows) const
 {
+#ifdef __WXGTK3__
+    // no access to internal GdkWindows
+    wxUnusedVar(windows);
+#else
     GtkSpinButton* spinbutton = GTK_SPIN_BUTTON(m_widget);
 
     windows.push_back(spinbutton->entry.text_area);
     windows.push_back(spinbutton->panel);
+#endif
 
     return NULL;
 }

@@ -842,6 +842,9 @@ wxString wxMacFSRefToPath( const FSRef *fsRef , CFStringRef additionalPathCompon
 {
     CFURLRef fullURLRef;
     fullURLRef = CFURLCreateFromFSRef(NULL, fsRef);
+    if ( fullURLRef == NULL)
+        return wxEmptyString;
+    
     if ( additionalPathComponent )
     {
         CFURLRef parentURLRef = fullURLRef ;
@@ -849,12 +852,10 @@ wxString wxMacFSRefToPath( const FSRef *fsRef , CFStringRef additionalPathCompon
             additionalPathComponent,false);
         CFRelease( parentURLRef ) ;
     }
-    CFStringRef cfString = CFURLCopyFileSystemPath(fullURLRef, kDefaultPathStyle);
+    wxCFStringRef cfString( CFURLCopyFileSystemPath(fullURLRef, kDefaultPathStyle ));
     CFRelease( fullURLRef ) ;
-    CFMutableStringRef cfMutableString = CFStringCreateMutableCopy(NULL, 0, cfString);
-    CFRelease( cfString );
-    CFStringNormalize(cfMutableString,kCFStringNormalizationFormC);
-    return wxCFStringRef(cfMutableString).AsString();
+
+    return wxCFStringRef::AsStringWithNormalizationFormC(cfString);
 }
 
 OSStatus wxMacPathToFSRef( const wxString&path , FSRef *fsRef )
@@ -879,13 +880,10 @@ OSStatus wxMacPathToFSRef( const wxString&path , FSRef *fsRef )
 
 wxString wxMacHFSUniStrToString( ConstHFSUniStr255Param uniname )
 {
-    CFStringRef cfname = CFStringCreateWithCharacters( kCFAllocatorDefault,
+    wxCFStringRef cfname( CFStringCreateWithCharacters( kCFAllocatorDefault,
                                                       uniname->unicode,
-                                                      uniname->length );
-    CFMutableStringRef cfMutableString = CFStringCreateMutableCopy(NULL, 0, cfname);
-    CFRelease( cfname );
-    CFStringNormalize(cfMutableString,kCFStringNormalizationFormC);
-    return wxCFStringRef(cfMutableString).AsString() ;
+                                                      uniname->length ) );
+    return wxCFStringRef::AsStringWithNormalizationFormC(cfname);
 }
 
 #ifndef __LP64__
@@ -1537,7 +1535,7 @@ bool wxSetWorkingDirectory(const wxString& d)
     // No equivalent in WinCE
     wxUnusedVar(d);
 #else
-    success = (SetCurrentDirectory(d.fn_str()) != 0);
+    success = (SetCurrentDirectory(d.t_str()) != 0);
 #endif
 #else
     // Must change drive, too.
@@ -1765,7 +1763,7 @@ static bool wxCheckWin32Permission(const wxString& path, DWORD access)
     // quoting the MSDN: "To obtain a handle to a directory, call the
     // CreateFile function with the FILE_FLAG_BACKUP_SEMANTICS flag", but this
     // doesn't work under Win9x/ME but then it's not needed there anyhow
-    const DWORD dwAttr = ::GetFileAttributes(path.fn_str());
+    const DWORD dwAttr = ::GetFileAttributes(path.t_str());
     if ( dwAttr == INVALID_FILE_ATTRIBUTES )
     {
         // file probably doesn't exist at all

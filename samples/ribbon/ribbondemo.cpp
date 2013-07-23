@@ -24,6 +24,7 @@
 #include "wx/ribbon/toolbar.h"
 #include "wx/sizer.h"
 #include "wx/menu.h"
+#include "wx/msgdlg.h"
 #include "wx/dcbuffer.h"
 #include "wx/colordlg.h"
 #include "wx/artprov.h"
@@ -81,7 +82,8 @@ public:
         ID_UI_CHECK_UPDATED,
         ID_CHANGE_TEXT1,
         ID_CHANGE_TEXT2,
-        ID_UI_CHANGE_TEXT_UPDATED
+        ID_UI_CHANGE_TEXT_UPDATED,
+        ID_REMOVE_PAGE
     };
 
     void OnEnableUpdateUI(wxUpdateUIEvent& evt);
@@ -126,8 +128,10 @@ public:
     void OnPositionLeftIcons(wxCommandEvent& evt);
     void OnPositionLeftBoth(wxCommandEvent& evt);
     void OnPositionLeftDropdown(wxRibbonToolBarEvent& evt);
-
+    void OnRemovePage(wxRibbonButtonBarEvent& evt);
     void OnTogglePanels(wxCommandEvent& evt);
+
+    void OnExtButton(wxRibbonPanelEvent& evt);
 
 protected:
     wxRibbonGallery* PopulateColoursPanel(wxWindow* panel, wxColour def,
@@ -222,6 +226,8 @@ EVT_MENU(ID_POSITION_TOP, MyFrame::OnPositionTopLabels)
 EVT_MENU(ID_POSITION_TOP_ICONS, MyFrame::OnPositionTopIcons)
 EVT_MENU(ID_POSITION_TOP_BOTH, MyFrame::OnPositionTopBoth)
 EVT_TOGGLEBUTTON(ID_TOGGLE_PANELS, MyFrame::OnTogglePanels)
+EVT_RIBBONPANEL_EXTBUTTON_ACTIVATED(wxID_ANY, MyFrame::OnExtButton)
+EVT_RIBBONBUTTONBAR_CLICKED(ID_REMOVE_PAGE, MyFrame::OnRemovePage)
 END_EVENT_TABLE()
 
 #include "align_center.xpm"
@@ -250,13 +256,17 @@ END_EVENT_TABLE()
 MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, wxT("wxRibbon Sample Application"), wxDefaultPosition, wxSize(800, 600), wxDEFAULT_FRAME_STYLE)
 {
-    m_ribbon = new wxRibbonBar(this, wxID_ANY);
+    m_ribbon = new wxRibbonBar(this, wxID_ANY,
+                               wxDefaultPosition, wxDefaultSize,
+                               wxRIBBON_BAR_DEFAULT_STYLE |
+                               wxRIBBON_BAR_SHOW_PANEL_EXT_BUTTONS);
 
     {
         wxRibbonPage* home = new wxRibbonPage(m_ribbon, wxID_ANY, wxT("Examples"), ribbon_xpm);
         wxRibbonPanel *toolbar_panel = new wxRibbonPanel(home, wxID_ANY, wxT("Toolbar"), 
                                             wxNullBitmap, wxDefaultPosition, wxDefaultSize, 
-                                            wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+                                            wxRIBBON_PANEL_NO_AUTO_MINIMISE |
+                                            wxRIBBON_PANEL_EXT_BUTTON);
         wxRibbonToolBar *toolbar = new wxRibbonToolBar(toolbar_panel, ID_MAIN_TOOLBAR);
         toolbar->AddToggleTool(wxID_JUSTIFY_LEFT, align_left_xpm);
         toolbar->AddToggleTool(wxID_JUSTIFY_CENTER , align_center_xpm);
@@ -378,7 +388,12 @@ MyFrame::MyFrame()
         bar->AddButton(ID_UI_CHANGE_TEXT_UPDATED, wxT("Zero"), ribbon_xpm);
     }
     new wxRibbonPage(m_ribbon, wxID_ANY, wxT("Empty Page"), empty_xpm);
-    new wxRibbonPage(m_ribbon, wxID_ANY, wxT("Another Page"), empty_xpm);
+    {
+        wxRibbonPage* page = new wxRibbonPage(m_ribbon, wxID_ANY, wxT("Another Page"), empty_xpm);
+        wxRibbonPanel *panel = new wxRibbonPanel(page, wxID_ANY, wxT("Page manipulation"), ribbon_xpm);
+        wxRibbonButtonBar *bar = new wxRibbonButtonBar(panel, wxID_ANY);
+        bar->AddButton(ID_REMOVE_PAGE, wxT("Remove"), wxArtProvider::GetBitmap(wxART_DELETE, wxART_OTHER, wxSize(24, 24)));
+    }
 
     m_ribbon->Realize();
 
@@ -821,6 +836,11 @@ void MyFrame::OnTogglePanels(wxCommandEvent& WXUNUSED(evt))
     m_ribbon->ShowPanels(m_togglePanels->GetValue());
 }
 
+void MyFrame::OnExtButton(wxRibbonPanelEvent& WXUNUSED(evt))
+{
+    wxMessageBox("Extension button clicked");
+}
+
 void MyFrame::AddText(wxString msg)
 {
     m_logwindow->AppendText(msg);
@@ -953,4 +973,14 @@ void MyFrame::SetArtProvider(wxRibbonArtProvider *prov)
     m_ribbon->Realize();
     m_ribbon->Thaw();
     GetSizer()->Layout();
+}
+
+void MyFrame::OnRemovePage(wxRibbonButtonBarEvent& WXUNUSED(evt))
+{
+    size_t n = m_ribbon->GetPageCount();
+    if(n > 0)
+    {
+        m_ribbon->DeletePage(n-1);
+        m_ribbon->Realize();
+    }
 }

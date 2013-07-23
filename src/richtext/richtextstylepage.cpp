@@ -158,7 +158,7 @@ bool wxRichTextStylePage::TransferDataFromWindow()
 bool wxRichTextStylePage::TransferDataToWindow()
 {
     wxPanel::TransferDataToWindow();
-    
+
     wxRichTextStyleDefinition* def = wxRichTextFormattingDialog::GetDialogStyleDefinition(this);
     if (def)
     {
@@ -310,7 +310,7 @@ wxIcon wxRichTextStylePage::GetIconResource( const wxString& name )
 void wxRichTextStylePage::OnNextStyleUpdate( wxUpdateUIEvent& event )
 {
     wxRichTextStyleDefinition* def = wxRichTextFormattingDialog::GetDialogStyleDefinition(this);
-    event.Enable(def->IsKindOf(CLASSINFO(wxRichTextParagraphStyleDefinition)));
+    event.Enable(wxDynamicCast(def, wxRichTextParagraphStyleDefinition) != NULL);
 }
 
 #endif // wxUSE_RICHTEXT

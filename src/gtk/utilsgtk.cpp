@@ -21,7 +21,9 @@
 #include "wx/apptrait.h"
 #include "wx/process.h"
 #include "wx/sysopt.h"
+#ifdef __UNIX__
 #include "wx/unix/execute.h"
+#endif
 
 #include "wx/gtk/private/timer.h"
 #include "wx/evtloop.h"
@@ -55,6 +57,8 @@
     #include "wx/unix/utilsx11.h"
 #endif
 
+#include "wx/gtk/private/gtk2-compat.h"
+
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
@@ -64,23 +68,22 @@ extern GtkWidget *wxGetRootWindow();
 //----------------------------------------------------------------------------
 // misc.
 //----------------------------------------------------------------------------
-#ifndef __EMX__
-// on OS/2, we use the wxBell from wxBase library
 
 void wxBell()
 {
     gdk_beep();
 }
-#endif
 
 // ----------------------------------------------------------------------------
-// display characterstics
+// display characteristics
 // ----------------------------------------------------------------------------
 
+#ifdef GDK_WINDOWING_X11
 void *wxGetDisplay()
 {
-    return GDK_DISPLAY();
+    return GDK_DISPLAY_XDISPLAY(gtk_widget_get_display(wxGetRootWindow()));
 }
+#endif
 
 void wxDisplaySize( int *width, int *height )
 {
@@ -106,7 +109,7 @@ bool wxColourDisplay()
 
 int wxDisplayDepth()
 {
-    return gtk_widget_get_visual(wxGetRootWindow())->depth;
+    return gdk_visual_get_depth(gtk_widget_get_visual(wxGetRootWindow()));
 }
 
 wxWindow* wxFindWindowAtPoint(const wxPoint& pt)
@@ -167,7 +170,9 @@ const gchar *wx_pango_version_check (int major, int minor, int micro)
     //       added in pango-1.4 or earlier since GTK 2.4 (our minimum requirement
     //       for GTK lib) required pango 1.4...
 
-#ifdef PANGO_VERSION_MAJOR
+#ifdef __WXGTK3__
+    return pango_version_check(major, minor, micro);
+#elif defined(PANGO_VERSION_MAJOR)
     if (!gtk_check_version (2,11,0))
     {
         // GTK+ 2.11 requires Pango >= 1.15.3 and pango_version_check
@@ -186,10 +191,11 @@ const gchar *wx_pango_version_check (int major, int minor, int micro)
 #endif
 }
 
-
 // ----------------------------------------------------------------------------
 // subprocess routines
 // ----------------------------------------------------------------------------
+
+#ifdef __UNIX__
 
 extern "C" {
 static gboolean EndProcessDetector(GIOChannel* source, GIOCondition, void* data)
@@ -216,7 +222,7 @@ int wxGUIAppTraits::AddProcessCallback(wxEndProcessData *proc_data, int fd)
     return int(id);
 }
 
-
+#endif // __UNIX__
 
 // ----------------------------------------------------------------------------
 // wxPlatformInfo-related
@@ -284,13 +290,19 @@ wxEventLoopBase *wxGUIAppTraits::CreateEventLoop()
 }
 
 
-#if wxUSE_INTL
+#if wxUSE_INTL && defined(__UNIX__)
 void wxGUIAppTraits::SetLocale()
 {
+#ifdef __WXGTK3__
+    setlocale(LC_ALL, "");
+#else
     gtk_set_locale();
+#endif
     wxUpdateLocaleIsUtf8();
 }
 #endif
+
+#ifdef __UNIX__
 
 #if wxDEBUG_LEVEL && wxUSE_STACKWALKER
 
@@ -380,6 +392,10 @@ bool wxGUIAppTraits::ShowAssertDialog(const wxString& msg)
     return wxAppTraitsBase::ShowAssertDialog(msg);
 }
 
+#endif // __UNIX__
+
+#if defined(__UNIX__) || defined(__OS2__)
+
 wxString wxGUIAppTraits::GetDesktopEnvironment() const
 {
     wxString de = wxSystemOptions::GetOption(wxT("gtk.desktop"));
@@ -397,6 +413,8 @@ wxString wxGUIAppTraits::GetDesktopEnvironment() const
 
     return de;
 }
+
+#endif // __UNIX__ || __OS2__
 
 #ifdef __WXGTK26__
 
@@ -447,6 +465,8 @@ wxString wxGetNameFromGtkOptionEntry(const GOptionEntry *opt)
 
 #endif // __WXGTK26__
 
+#ifdef __UNIX__
+
 wxString
 wxGUIAppTraits::GetStandardCmdLineOptions(wxArrayString& names,
                                           wxArrayString& desc) const
@@ -454,15 +474,17 @@ wxGUIAppTraits::GetStandardCmdLineOptions(wxArrayString& names,
     wxString usage;
 
 #ifdef __WXGTK26__
+#ifndef __WXGTK3__
     if (!gtk_check_version(2,6,0))
+#endif
     {
         // since GTK>=2.6, we can use the glib_check_version() symbol...
 
-        // check whether GLib version is greater than 2.6 but also lower than 2.31
+        // check whether GLib version is greater than 2.6 but also lower than 2.33
         // because, as we use the undocumented _GOptionGroup struct, we don't want
-        // to run this code with future versions which might change it (2.30 is the
+        // to run this code with future versions which might change it (2.32 is the
         // latest one at the time of this writing)
-        if (glib_check_version(2,6,0) == NULL && glib_check_version(2,31,0))
+        if (glib_check_version(2,6,0) == NULL && glib_check_version(2,33,0))
         {
             usage << _("The following standard GTK+ options are also supported:\n");
 
@@ -497,3 +519,4 @@ wxGUIAppTraits::GetStandardCmdLineOptions(wxArrayString& names,
     return usage;
 }
 
+#endif // __UNIX__

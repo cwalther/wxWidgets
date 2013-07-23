@@ -68,6 +68,9 @@
 /* Define this if your version of GTK+ is greater than 2.18 */
 #undef __WXGTK218__
 
+/* Define this if your version of GTK+ is >= 3.0 */
+#undef __WXGTK3__
+
 /* Define this if you want to use GPE features */
 #undef __WXGPE__
 
@@ -202,6 +205,7 @@
 
 #define wxUSE_PRINTF_POS_PARAMS      0
 
+#define wxUSE_COMPILER_TLS 0
 
 
 #define wxUSE_STL 0

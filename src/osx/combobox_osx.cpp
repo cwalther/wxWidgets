@@ -131,11 +131,13 @@ unsigned int wxComboBox::GetCount() const
 
 void wxComboBox::DoDeleteOneItem(unsigned int n)
 {
+    m_datas.RemoveAt(n);
     GetComboPeer()->RemoveItem(n);
 }
 
 void wxComboBox::DoClear()
 {
+    m_datas.Clear();
     GetComboPeer()->Clear();
 }
 
@@ -189,8 +191,11 @@ wxString wxComboBox::GetStringSelection() const
 
 void wxComboBox::SetString(unsigned int n, const wxString& s)
 {
-    Delete(n);
-    Insert(s, n);
+    // Notice that we shouldn't delete and insert the item in this control
+    // itself as this would also affect the client data which we need to
+    // preserve here.
+    GetComboPeer()->RemoveItem(n);
+    GetComboPeer()->InsertItem(n, s);
     SetValue(s); // changing the item in the list won't update the display item
 }
 

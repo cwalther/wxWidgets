@@ -48,7 +48,6 @@
 // wxCFEventLoopSource and wxCFEventLoop implementation
 // ============================================================================
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
 namespace
 {
 
@@ -136,18 +135,6 @@ wxCFEventLoopSource::~wxCFEventLoopSource()
         CFRelease(m_cffd);
 }
 
-#else // OS X < 10.5
-
-wxEventLoopSource *
-wxCFEventLoop::AddSourceForFD(int WXUNUSED(fd),
-                              wxEventLoopSourceHandler * WXUNUSED(handler),
-                              int WXUNUSED(flags))
-{
-    return NULL;
-}
-
-#endif // MAC_OS_X_VERSION_MAX_ALLOWED
-
 #endif // wxUSE_EVENTLOOP_SOURCE
 
 void wxCFEventLoop::OSXCommonModeObserverCallBack(CFRunLoopObserverRef observer, int activity, void *info)
@@ -182,7 +169,7 @@ void wxCFEventLoop::CommonModeObserverCallBack(CFRunLoopObserverRef WXUNUSED(obs
 
     if ( activity & kCFRunLoopBeforeWaiting )
     {
-        if ( ProcessIdle() )
+        if ( m_processIdleEvents && ProcessIdle() )
         {
             WakeUp();
         }
@@ -214,6 +201,7 @@ wxCFEventLoop::DefaultModeObserverCallBack(CFRunLoopObserverRef WXUNUSED(observe
 wxCFEventLoop::wxCFEventLoop()
 {
     m_shouldExit = false;
+    m_processIdleEvents = true;
 
     m_runLoop = CFGetCurrentRunLoop();
 
@@ -223,18 +211,19 @@ wxCFEventLoop::wxCFEventLoop()
     m_commonModeRunLoopObserver = CFRunLoopObserverCreate( kCFAllocatorDefault, kCFRunLoopBeforeTimers | kCFRunLoopBeforeWaiting , true /* repeats */, 0,
                                                           (CFRunLoopObserverCallBack) wxCFEventLoop::OSXCommonModeObserverCallBack, &ctxt );
     CFRunLoopAddObserver(m_runLoop, m_commonModeRunLoopObserver, kCFRunLoopCommonModes);
-    CFRelease(m_commonModeRunLoopObserver);
 
     m_defaultModeRunLoopObserver = CFRunLoopObserverCreate( kCFAllocatorDefault, kCFRunLoopBeforeTimers | kCFRunLoopBeforeWaiting , true /* repeats */, 0,
                                                            (CFRunLoopObserverCallBack) wxCFEventLoop::OSXDefaultModeObserverCallBack, &ctxt );
     CFRunLoopAddObserver(m_runLoop, m_defaultModeRunLoopObserver, kCFRunLoopDefaultMode);
-    CFRelease(m_defaultModeRunLoopObserver);
 }
 
 wxCFEventLoop::~wxCFEventLoop()
 {
     CFRunLoopRemoveObserver(m_runLoop, m_commonModeRunLoopObserver, kCFRunLoopCommonModes);
     CFRunLoopRemoveObserver(m_runLoop, m_defaultModeRunLoopObserver, kCFRunLoopDefaultMode);
+
+    CFRelease(m_defaultModeRunLoopObserver);
+    CFRelease(m_commonModeRunLoopObserver);
 }
 
 
@@ -450,6 +439,20 @@ void wxCFEventLoop::Exit(int rc)
     m_exitcode = rc;
     m_shouldExit = true;
     DoStop();
+}
+
+wxCFEventLoopPauseIdleEvents::wxCFEventLoopPauseIdleEvents()
+{
+    wxCFEventLoop* cfl = dynamic_cast<wxCFEventLoop*>(wxEventLoopBase::GetActive());
+    if ( cfl )
+        cfl->SetProcessIdleEvents(false);
+}
+
+wxCFEventLoopPauseIdleEvents::~wxCFEventLoopPauseIdleEvents()
+{
+    wxCFEventLoop* cfl = dynamic_cast<wxCFEventLoop*>(wxEventLoopBase::GetActive());
+    if ( cfl )
+        cfl->SetProcessIdleEvents(true);
 }
 
 // TODO Move to thread_osx.cpp

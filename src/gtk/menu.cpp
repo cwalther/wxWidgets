@@ -24,7 +24,10 @@
 
 #include "wx/accel.h"
 #include "wx/stockitem.h"
+
+#include <gtk/gtk.h>
 #include "wx/gtk/private.h"
+#include "wx/gtk/private/gtk2-compat.h"
 #include "wx/gtk/private/mnemonics.h"
 
 // we use normal item but with a special id for the menu title
@@ -57,6 +60,18 @@ static void DoCommonMenuCallbackCode(wxMenu *menu, wxMenuEvent& event)
 //-----------------------------------------------------------------------------
 // wxMenuBar
 //-----------------------------------------------------------------------------
+
+wxMenuBar::~wxMenuBar()
+{
+    if (m_widget)
+    {
+        // Work around a probable bug in Ubuntu 12.04 which causes a warning if
+        // gtk_widget_destroy() is called on a wxMenuBar attached to a frame
+        GtkWidget* widget = m_widget;
+        m_widget = NULL;
+        g_object_unref(widget);
+    }
+}
 
 void wxMenuBar::Init(size_t n, wxMenu *menus[], const wxString titles[], long style)
 {
@@ -91,7 +106,7 @@ void wxMenuBar::Init(size_t n, wxMenu *menus[], const wxString titles[], long st
     GTKApplyWidgetStyle();
 #endif // wxUSE_LIBHILDON || wxUSE_LIBHILDON2/!wxUSE_LIBHILDON && !wxUSE_LIBHILDON2
 
-    g_object_ref(m_widget);
+    g_object_ref_sink(m_widget);
 
     for (size_t i = 0; i < n; ++i )
         Append(menus[i], titles[i]);
@@ -126,7 +141,7 @@ DetachFromFrame(wxMenu* menu, wxFrame* frame)
         // Note that wxGetTopLevelParent() is really needed because this frame
         // can be an MDI child frame which is a fake frame and not a TLW at all
         GtkWindow * const tlw = GTK_WINDOW(wxGetTopLevelParent(frame)->m_widget);
-        if (g_slist_find(menu->m_accel->acceleratables, tlw))
+        if (g_slist_find(gtk_accel_groups_from_object(G_OBJECT(tlw)), menu->m_accel))
             gtk_window_remove_accel_group(tlw, menu->m_accel);
     }
 
@@ -147,7 +162,7 @@ AttachToFrame(wxMenu* menu, wxFrame* frame)
     if (menu->m_accel)
     {
         GtkWindow * const tlw = GTK_WINDOW(wxGetTopLevelParent(frame)->m_widget);
-        if (!g_slist_find(menu->m_accel->acceleratables, tlw))
+        if (!g_slist_find(gtk_accel_groups_from_object(G_OBJECT(tlw)), menu->m_accel))
             gtk_window_add_accel_group(tlw, menu->m_accel);
     }
 
@@ -422,7 +437,7 @@ bool wxMenuBar::IsEnabledTop(size_t pos) const
     wxCHECK_MSG( node, false, wxS("invalid index in IsEnabledTop") );
     wxMenu* const menu = node->GetData();
     wxCHECK_MSG( menu->m_owner, true, wxS("no menu owner?") );
-    return gtk_widget_get_sensitive( menu->m_owner );
+    return gtk_widget_get_sensitive( menu->m_owner ) != 0;
 }
 
 wxString wxMenuBar::GetMenuLabel( size_t pos ) const
@@ -887,6 +902,9 @@ wxMenuItem *wxMenu::DoRemove(wxMenuItem *item)
         return NULL;
 
     GtkWidget * const mitem = item->GetMenuItem();
+#ifdef __WXGTK3__
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(mitem), NULL);
+#else
     if (!gtk_check_version(2,12,0))
     {
         // gtk_menu_item_remove_submenu() is deprecated since 2.12, but
@@ -901,6 +919,7 @@ wxMenuItem *wxMenu::DoRemove(wxMenuItem *item)
         // instead.
         gtk_menu_item_remove_submenu(GTK_MENU_ITEM(mitem));
     }
+#endif
 
     gtk_widget_destroy(mitem);
     item->SetMenuItem(NULL);

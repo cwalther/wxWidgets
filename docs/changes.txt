@@ -10,6 +10,14 @@ INCOMPATIBLE CHANGES SINCE 2.8.x
         the "Changes Since wxWidgets 2.8" section of the manual,
         please read it if the explanation here is too cryptic.
 
+Table of contents of this section:
+
+ - Unicode-related changes
+ - wxODBC and contrib libraries removal
+ - Changes in behaviour not resulting in compilation errors
+ - Build system changes
+ - Major new features in this release
+
 
 Unicode-related changes
 -----------------------
@@ -470,6 +478,20 @@ Changes in behaviour visible to end users
   now the control scrolls if too much text is added.
 
 
+Build system changes
+--------------------
+
+- In wxMSW makefile builds, "_x64" is used instead of "_amd64" when compiling
+  for this architecture in the architecture-specific paths and library names.
+  TARGET_CPU can still be specified as "amd64" for compatibility but "x64"
+  should be used now.
+
+- Official wxMSW binaries, i.e. those built with OFFICIAL_BUILD=1, built with
+  MSVC now include the version of the compiler used and the architecture if
+  it's not the default "x86". E.g. a library built with MSVC 10 for amd64 is
+  called "wxbase294ud_vc110_amd64.dll" now.
+
+
 Major new features in this release
 ----------------------------------
 
@@ -502,7 +524,7 @@ Major new features in this release
   was added.
 
 
-2.9.4:
+2.9.4: (release 2012-07-09)
 ------
 
 INCOMPATIBLE CHANGES SINCE 2.9.3
@@ -523,6 +545,7 @@ All:
 - Fix deadlock due to too many events in Unix console apps (Lukasz Michalski).
 - Added wxDir::GetNameWithSep().
 - Allow unloading wxPluginLibrary objects in any order (manyleaves).
+- Fix passing strings with embedded NULs in wxThreadEvents (sodev).
 
 All (GUI):
 
@@ -541,6 +564,8 @@ All (GUI):
 - Send wxEVT_UPDATE_UI for wxRibbonButtonBar and wxRibbonToolBar (Emilien Kia).
 - Add InsertXXXButton() to wxRibbonButtonBar and wxRibbonToolBar (Emilien Kia).
 - Allow enabling/disabling and toggling tools in wxRibbonToolBar (Emilien Kia).
+- Add wxRibbonBar::DeletePage() and ClearPages() methods (Emilien Kia).
+- Implement support for extension button to wxRibbonPanel (Emilien Kia).
 - Fix multiple item selection in generic wxTreeCtrl (Igor Korot).
 - Implement wxMenuBar::IsEnabledTop() for all major ports (Igor Korot).
 - Implement best size calculation for report mode wxListCtrl.
@@ -560,15 +585,22 @@ All (GUI):
 - Fully implement wxStyledTextCtrl::PositionToXY() (troelsk).
 - Added wxDataViewListCtrl::{Set,Get}ItemData().
 - Added wxDataViewListCtrl::GetItemCount() (Kry).
+- Added support for Korean Johab and Vietnamese encodings (jank9201).
+- Fix off by 1 bug with setting font size in points in wxHTML (gevorg).
+- Fix return value of wxGenericListCtrl::InsertColumn() (Sebastian Walderich).
 
 GTK:
 
+- Added support for GTK+ 3 (John Chain and Paul Cornett)
 - Implement support for wxBG_STYLE_TRANSPARENT (Armel Asselin).
+- Implement stippled/hatched pens/brushes in wxGraphicsContext (Kit Bishop).
 - Fix wxNotebook best size calculation.
 - Implement wxDirDialog::Create() and wxFileDialog::Create() (vinayakgarg).
 - Fix const methods display in assert dialog (vinayakgarg).
 - Implement native tab art for wxAUI (Jens Lody and Teodor Petrov).
 - Fix pasting large amounts of text (Bradley Hawkins).
+- Show gstreamer errors if wxMediaCtrl fails to play file.
+- Fix wxGridCellEnumEditor mouse handling (Fulvio Senore).
 
 MSW:
 
@@ -586,7 +618,10 @@ MSW:
 - Fix handling of composite windows in wxToolTip (Armel Asselin).
 - Add VT_I8 support to wxAutomationObject (PB).
 - Fix wxListbook size calculations to avoid spurious scrollbars.
-- Fix non-GUI code compilation with wxUSE_UNICODE_UTF8 (Kolya Kosenko).
+- Fix code compilation with wxUSE_UNICODE_UTF8 (Kolya Kosenko).
+- Fix crash in wxTreeCtrl when calling GetSelection() from selection changed
+  event handler under Vista and later (sbrowne).
+- Fix text extent computation in wxGraphicsContext (juria90).
 
 OSX:
 

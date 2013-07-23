@@ -93,6 +93,36 @@ static WNDPROC gs_wndprocEdit = (WNDPROC)NULL;
 // implementation
 // ============================================================================
 
+namespace
+{
+
+// Check if the given message should be forwarded from the edit control which
+// is part of the combobox to wxComboBox itself. All messages generating the
+// events that the code using wxComboBox could be interested in must be
+// forwarded.
+bool ShouldForwardFromEditToCombo(UINT message)
+{
+    switch ( message )
+    {
+        case WM_KEYUP:
+        case WM_KEYDOWN:
+        case WM_CHAR:
+        case WM_SYSCHAR:
+        case WM_SYSKEYDOWN:
+        case WM_SYSKEYUP:
+        case WM_SETFOCUS:
+        case WM_KILLFOCUS:
+        case WM_CUT:
+        case WM_COPY:
+        case WM_PASTE:
+            return true;
+    }
+
+    return false;
+}
+
+} // anonymous namespace
+
 // ----------------------------------------------------------------------------
 // wnd proc for subclassed edit control
 // ----------------------------------------------------------------------------
@@ -105,49 +135,34 @@ LRESULT APIENTRY _EXPORT wxComboEditWndProc(HWND hWnd,
     HWND hwndCombo = ::GetParent(hWnd);
     wxWindow *win = wxFindWinFromHandle((WXHWND)hwndCombo);
 
-    switch ( message )
+    if ( ShouldForwardFromEditToCombo(message) )
     {
-        // forward some messages to the combobox to generate the appropriate
-        // wxEvents from them
-        case WM_KEYUP:
-        case WM_KEYDOWN:
-        case WM_CHAR:
-        case WM_SYSCHAR:
-        case WM_SYSKEYDOWN:
-        case WM_SYSKEYUP:
-        case WM_SETFOCUS:
-        case WM_KILLFOCUS:
+        wxComboBox *combo = wxDynamicCast(win, wxComboBox);
+        if ( !combo )
+        {
+            // we can get WM_KILLFOCUS while our parent is already half
+            // destroyed and hence doesn't look like a combobx any
+            // longer, check for it to avoid bogus assert failures
+            if ( !win->IsBeingDeleted() )
             {
-                wxComboBox *combo = wxDynamicCast(win, wxComboBox);
-                if ( !combo )
-                {
-                    // we can get WM_KILLFOCUS while our parent is already half
-                    // destroyed and hence doesn't look like a combobx any
-                    // longer, check for it to avoid bogus assert failures
-                    if ( !win->IsBeingDeleted() )
-                    {
-                        wxFAIL_MSG( wxT("should have combo as parent") );
-                    }
-                }
-                else if ( combo->MSWProcessEditMsg(message, wParam, lParam) )
-                {
-                    // handled by parent
-                    return 0;
-                }
+                wxFAIL_MSG( wxT("should have combo as parent") );
             }
-            break;
+        }
+        else if ( combo->MSWProcessEditMsg(message, wParam, lParam) )
+        {
+            // handled by parent
+            return 0;
+        }
+    }
+    else if ( message == WM_GETDLGCODE )
+    {
+        wxCHECK_MSG( win, 0, wxT("should have a parent") );
 
-        case WM_GETDLGCODE:
-            {
-                wxCHECK_MSG( win, 0, wxT("should have a parent") );
-
-                if ( win->GetWindowStyle() & wxTE_PROCESS_ENTER )
-                {
-                    // need to return a custom dlg code or we'll never get it
-                    return DLGC_WANTMESSAGE;
-                }
-            }
-            break;
+        if ( win->GetWindowStyle() & wxTE_PROCESS_ENTER )
+        {
+            // need to return a custom dlg code or we'll never get it
+            return DLGC_WANTMESSAGE;
+        }
     }
 
     return ::CallWindowProc(CASTWNDPROC gs_wndprocEdit, hWnd, message, wParam, lParam);
@@ -235,29 +250,16 @@ bool wxComboBox::MSWProcessEditMsg(WXUINT msg, WXWPARAM wParam, WXLPARAM lParam)
                     return true;
                 }
             }
-            // fall through
+            // fall through, WM_CHAR is one of the message we should forward.
 
-        case WM_SYSCHAR:
-            return HandleChar(wParam, lParam);
-
-        case WM_SYSKEYDOWN:
-        case WM_KEYDOWN:
-            return HandleKeyDown(wParam, lParam);
-
-        case WM_SYSKEYUP:
-        case WM_KEYUP:
-            return HandleKeyUp(wParam, lParam);
-
-        case WM_SETFOCUS:
-            return HandleSetFocus((WXHWND)wParam);
-
-        case WM_KILLFOCUS:
-            return HandleKillFocus((WXHWND)wParam);
-
-        case WM_CUT:
-        case WM_COPY:
-        case WM_PASTE:
-            return HandleClipboardEvent(msg);
+        default:
+            if ( ShouldForwardFromEditToCombo(msg) )
+            {
+                // For all the messages forward from the edit control the
+                // result is not used.
+                WXLRESULT result;
+                return MSWHandleMessage(&result, msg, wParam, lParam);
+            }
     }
 
     return false;
@@ -308,7 +310,7 @@ bool wxComboBox::MSWCommand(WXUINT param, WXWORD id)
             // this string is going to become the new combobox value soon but
             // we need it to be done right now, otherwise the event handler
             // could get a wrong value when it calls our GetValue()
-            ::SetWindowText(GetHwnd(), value.wx_str());
+            ::SetWindowText(GetHwnd(), value.t_str());
 
             {
                 wxCommandEvent event(wxEVT_COMMAND_COMBOBOX_SELECTED, GetId());

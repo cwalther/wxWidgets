@@ -84,13 +84,21 @@ class TreeItemUnlocker
 {
 public:
     // unlock a single item
-    TreeItemUnlocker(HTREEITEM item) { ms_unlockedItem = item; }
+    TreeItemUnlocker(HTREEITEM item)
+    {
+        m_oldUnlockedItem = ms_unlockedItem;
+        ms_unlockedItem = item;
+    }
 
     // unlock all items, don't use unless absolutely necessary
-    TreeItemUnlocker() { ms_unlockedItem = (HTREEITEM)-1; }
+    TreeItemUnlocker()
+    {
+        m_oldUnlockedItem = ms_unlockedItem;
+        ms_unlockedItem = (HTREEITEM)-1;
+    }
 
     // lock everything back
-    ~TreeItemUnlocker() { ms_unlockedItem = NULL; }
+    ~TreeItemUnlocker() { ms_unlockedItem = m_oldUnlockedItem; }
 
 
     // check if the item state is currently locked
@@ -99,6 +107,9 @@ public:
 
 private:
     static HTREEITEM ms_unlockedItem;
+    HTREEITEM m_oldUnlockedItem;
+
+    wxDECLARE_NO_COPY_CLASS(TreeItemUnlocker);
 };
 
 HTREEITEM TreeItemUnlocker::ms_unlockedItem = NULL;
@@ -959,7 +970,7 @@ void wxTreeCtrl::SetItemText(const wxTreeItemId& item, const wxString& text)
         return;
 
     wxTreeViewItem tvItem(item, TVIF_TEXT);
-    tvItem.pszText = (wxChar *)text.wx_str();  // conversion is ok
+    tvItem.pszText = wxMSW_CONV_LPTSTR(text);
     DoSetItem(&tvItem);
 
     // when setting the text of the item being edited, the text control should
@@ -972,7 +983,7 @@ void wxTreeCtrl::SetItemText(const wxTreeItemId& item, const wxString& text)
     {
         if ( item == m_idEdited )
         {
-            ::SetWindowText(hwndEdit, text.wx_str());
+            ::SetWindowText(hwndEdit, text.t_str());
         }
     }
 }
@@ -1476,7 +1487,7 @@ wxTreeItemId wxTreeCtrl::DoInsertAfter(const wxTreeItemId& parent,
     if ( !text.empty() )
     {
         mask |= TVIF_TEXT;
-        tvIns.item.pszText = (wxChar *)text.wx_str();  // cast is ok
+        tvIns.item.pszText = wxMSW_CONV_LPTSTR(text);
     }
     else
     {
@@ -1996,7 +2007,7 @@ void wxTreeCtrl::DeleteTextCtrl()
 wxTextCtrl *wxTreeCtrl::EditLabel(const wxTreeItemId& item,
                                   wxClassInfo *textControlClass)
 {
-    wxASSERT( textControlClass->IsKindOf(CLASSINFO(wxTextCtrl)) );
+    wxASSERT( textControlClass->IsKindOf(wxCLASSINFO(wxTextCtrl)) );
 
     DeleteTextCtrl();
 
@@ -2156,7 +2167,7 @@ void wxTreeCtrl::SortChildren(const wxTreeItemId& item)
     //     may be why as if you don't use the DECLARE_CLASS/IMPLEMENT_CLASS
     //     combo for your derived wxTreeCtrl if will sort without
     //     OnCompareItems
-    if ( GetClassInfo() == CLASSINFO(wxTreeCtrl) )
+    if ( GetClassInfo() == wxCLASSINFO(wxTreeCtrl) )
     {
         TreeView_SortChildren(GetHwnd(), HITEM(item), 0);
     }
@@ -2914,10 +2925,7 @@ wxTreeCtrl::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
                 // click if needed
                 if ( processed )
                 {
-                    int htFlags = 0;
-                    wxTreeItemId item = HitTest(wxPoint(x, y), htFlags);
-
-                    if ( htFlags & wxTREE_HITTEST_ONITEMSTATEICON )
+                    if ( tvht.flags & TVHT_ONITEMSTATEICON )
                     {
                         m_triggerStateImageClick = true;
                     }

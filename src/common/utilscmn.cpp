@@ -551,6 +551,11 @@ bool wxGetEnvMap(wxEnvVariableHashMap *map)
     wxCHECK_MSG( map, false, wxS("output pointer can't be NULL") );
 
 #if defined(__VISUALC__)
+    // This variable only exists to force the CRT to fill the wide char array,
+    // it might only have it in narrow char version until now as we use main()
+    // (and not _wmain()) as our entry point.
+    static wxChar* s_dummyEnvVar = _tgetenv(wxT("TEMP"));
+
     wxChar **env = _tenviron;
 #elif defined(__VMS)
    // Now this routine wil give false for OpenVMS
@@ -1275,7 +1280,7 @@ wxWindow* wxFindWindowAtPoint(wxWindow* win, const wxPoint& pt)
     // Hack for wxNotebook case: at least in wxGTK, all pages
     // claim to be shown, so we must only deal with the selected one.
 #if wxUSE_NOTEBOOK
-    if (win->IsKindOf(CLASSINFO(wxNotebook)))
+    if (wxDynamicCast(win, wxNotebook))
     {
       wxNotebook* nb = (wxNotebook*) win;
       int sel = nb->GetSelection();

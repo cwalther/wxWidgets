@@ -26,13 +26,14 @@
 #if wxUSE_TEXTCTRL || wxUSE_COMBOBOX
 
 #ifndef WX_PRECOMP
+    #include "wx/textentry.h"
     #include "wx/window.h"
     #include "wx/textctrl.h"
 #endif //WX_PRECOMP
 
-#include "wx/textentry.h"
-
+#include <gtk/gtk.h>
 #include "wx/gtk/private.h"
+#include "wx/gtk/private/gtk2-compat.h"
 
 // ============================================================================
 // signal handlers implementation
@@ -107,6 +108,26 @@ void wxTextEntry::WriteText(const wxString& value)
 
     // and move cursor to the end of new text
     gtk_editable_set_position(edit, len);
+}
+
+void wxTextEntry::DoSetValue(const wxString& value, int flags)
+{
+    if (value != GetValue())
+    {
+        // use Remove() rather than SelectAll() to avoid unnecessary clipboard
+        // operations, and prevent triggering an apparent bug in GTK which
+        // causes the the subsequent WriteText() to append rather than overwrite
+        {
+            EventsSuppressor noevents(this);
+            Remove(0, -1);
+        }
+        EventsSuppressor noeventsIf(this, !(flags & SetValue_SendEvent));
+        WriteText(value);
+    }
+    else if (flags & SetValue_SendEvent)
+        SendTextUpdatedEvent(GetEditableWindow());
+
+    SetInsertionPoint(0);
 }
 
 wxString wxTextEntry::DoGetValue() const
@@ -205,6 +226,7 @@ void wxTextEntry::SetSelection(long from, long to)
     // GTK+ does by default
     gtk_editable_select_region(GetEditable(), to, from);
 
+#ifndef __WXGTK3__
     // avoid reported problem with RHEL 5 GTK+ 2.10 where selection is reset by
     // a clipboard callback, see #13277
     if (gtk_check_version(2,12,0))
@@ -214,6 +236,7 @@ void wxTextEntry::SetSelection(long from, long to)
             to = entry->text_length;
         entry->selection_bound = to;
     }
+#endif
 }
 
 void wxTextEntry::GetSelection(long *from, long *to) const
@@ -279,7 +302,7 @@ bool wxTextEntry::DoAutoCompleteStrings(const wxArrayString& choices)
 
 bool wxTextEntry::IsEditable() const
 {
-    return gtk_editable_get_editable(GetEditable());
+    return gtk_editable_get_editable(GetEditable()) != 0;
 }
 
 void wxTextEntry::SetEditable(bool editable)

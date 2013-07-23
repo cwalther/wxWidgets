@@ -30,7 +30,7 @@
 #ifdef __cplusplus
 /*  Make sure the environment is set correctly */
 #   if defined(__WXMSW__) && defined(__X__)
-#       error "Target can't be both X and Windows"
+#       error "Target can't be both X and MSW"
 #   elif !defined(__WXMOTIF__) && \
          !defined(__WXMSW__)   && \
          !defined(__WXGTK__)   && \
@@ -175,6 +175,18 @@
 #   define wxSUPPRESS_GCC_PRIVATE_DTOR_WARNING(name)
 #endif
 
+/*
+   Clang Support
+ */
+ 
+#ifndef WX_HAS_CLANG_FEATURE
+#   ifndef __has_feature      
+#       define WX_HAS_CLANG_FEATURE(x) 0 
+#   else
+#       define WX_HAS_CLANG_FEATURE(x) __has_feature(x)
+#   endif
+#endif
+
 /*  ---------------------------------------------------------------------------- */
 /*  wxWidgets version and compatibility defines */
 /*  ---------------------------------------------------------------------------- */
@@ -205,7 +217,7 @@
 
 /* Prevents conflicts between sys/types.h and winsock.h with Cygwin, */
 /* when using Windows sockets. */
-#ifdef __CYGWIN__
+#if defined(__CYGWIN__) && defined(__WXMSW__)
 #define __USE_W32_SOCKETS
 #endif
 
@@ -514,6 +526,17 @@ typedef short int WXTYPE;
 #   define WX_ATTRIBUTE_PRINTF_5 WX_ATTRIBUTE_PRINTF(5, 6)
 #endif /* !defined(WX_ATTRIBUTE_PRINTF) */
 
+#ifndef WX_ATTRIBUTE_NORETURN
+#   if WX_HAS_CLANG_FEATURE(attribute_analyzer_noreturn)
+#       define WX_ATTRIBUTE_NORETURN __attribute__((analyzer_noreturn))
+#   elif defined( __GNUC__ )
+#       define WX_ATTRIBUTE_NORETURN __attribute__ ((noreturn))
+#   elif wxCHECK_VISUALC_VERSION(7)
+#       define WX_ATTRIBUTE_NORETURN __declspec(noreturn)
+#   else
+#       define WX_ATTRIBUTE_NORETURN
+#   endif
+#endif
 
 /*  Macro to issue warning when using deprecated functions with gcc3 or MSVC7: */
 #if wxCHECK_GCC_VERSION(3, 1)
@@ -2204,6 +2227,28 @@ enum wxHitTest
 /*  GDI descriptions */
 /*  ---------------------------------------------------------------------------- */
 
+// Hatch styles used by both pen and brush styles.
+//
+// NB: Do not use these constants directly, they're for internal use only, use
+//     wxBRUSHSTYLE_XXX_HATCH and wxPENSTYLE_XXX_HATCH instead.
+enum wxHatchStyle
+{
+    wxHATCHSTYLE_INVALID = -1,
+
+    /*
+        The value of the first style is chosen to fit with
+        wxDeprecatedGUIConstants values below, don't change it.
+     */
+    wxHATCHSTYLE_FIRST = 111,
+    wxHATCHSTYLE_BDIAGONAL = wxHATCHSTYLE_FIRST,
+    wxHATCHSTYLE_CROSSDIAG,
+    wxHATCHSTYLE_FDIAGONAL,
+    wxHATCHSTYLE_CROSS,
+    wxHATCHSTYLE_HORIZONTAL,
+    wxHATCHSTYLE_VERTICAL,
+    wxHATCHSTYLE_LAST = wxHATCHSTYLE_VERTICAL
+};
+
 /*
     WARNING: the following styles are deprecated; use the
              wxFontFamily, wxFontStyle, wxFontWeight, wxBrushStyle,
@@ -2252,14 +2297,14 @@ enum wxDeprecatedGUIConstants
     /*  drawn with a Pen, and without any Brush -- and it can be stippled. */
     wxSTIPPLE =          110,
 
-    wxBDIAGONAL_HATCH,     /* In wxWidgets < 2.6 use WX_HATCH macro  */
-    wxCROSSDIAG_HATCH,     /* to verify these wx*_HATCH are in style */
-    wxFDIAGONAL_HATCH,     /* of wxBrush. In wxWidgets >= 2.6 use    */
-    wxCROSS_HATCH,         /* wxBrush::IsHatch() instead.            */
-    wxHORIZONTAL_HATCH,
-    wxVERTICAL_HATCH,
-    wxFIRST_HATCH = wxBDIAGONAL_HATCH,
-    wxLAST_HATCH = wxVERTICAL_HATCH
+    wxBDIAGONAL_HATCH = wxHATCHSTYLE_BDIAGONAL,
+    wxCROSSDIAG_HATCH = wxHATCHSTYLE_CROSSDIAG,
+    wxFDIAGONAL_HATCH = wxHATCHSTYLE_FDIAGONAL,
+    wxCROSS_HATCH = wxHATCHSTYLE_CROSS,
+    wxHORIZONTAL_HATCH = wxHATCHSTYLE_HORIZONTAL,
+    wxVERTICAL_HATCH = wxHATCHSTYLE_VERTICAL,
+    wxFIRST_HATCH = wxHATCHSTYLE_FIRST,
+    wxLAST_HATCH = wxHATCHSTYLE_LAST
 };
 #endif
 
@@ -2995,7 +3040,9 @@ typedef void *          WXDRAWITEMSTRUCT;
 typedef void *          WXMEASUREITEMSTRUCT;
 typedef void *          WXLPCREATESTRUCT;
 
+#ifdef __WXMSW__
 typedef WXHWND          WXWidget;
+#endif
 
 #ifdef __WIN64__
 typedef unsigned __int64   WXWPARAM;
@@ -3168,14 +3215,14 @@ typedef struct _GdkDragContext  GdkDragContext;
     typedef unsigned long GdkAtom;
 #endif
 
-#if !defined(__WXGTK30__)
+#if !defined(__WXGTK3__)
     typedef struct _GdkColormap GdkColormap;
     typedef struct _GdkFont GdkFont;
     typedef struct _GdkGC GdkGC;
     typedef struct _GdkRegion GdkRegion;
 #endif
 
-#if defined(__WXGTK30__)
+#if defined(__WXGTK3__)
     typedef struct _GdkWindow GdkWindow;
 #elif defined(__WXGTK20__)
     typedef struct _GdkDrawable GdkWindow;
@@ -3231,9 +3278,9 @@ typedef const void* WXWidget;
 /*  included before or after wxWidgets classes, and therefore must be */
 /*  disabled here before any significant wxWidgets headers are included. */
 #ifdef __cplusplus
-#ifdef __WXMSW__
+#ifdef __WINDOWS__
 #include "wx/msw/winundef.h"
-#endif /* __WXMSW__ */
+#endif /* __WINDOWS__ */
 #endif /* __cplusplus */
 
 

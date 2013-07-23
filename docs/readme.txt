@@ -50,6 +50,12 @@ when using a release build of the library, was much improved making
 it less likely that you use the library incorrectly. Many new GUI
 and base classes have been added or improved.
 
+Compared to the previous 2.9.3 release the most important change is
+the addition of new, still experimental, GTK+ 3 support in wxGTK.
+But the main focus of this release is on incremental improvements
+and fixing defects in preparation for 3.0 release. In particular,
+wxOSX/Cocoa port has been significantly improved.
+
 Please see the file docs/changes.txt for more details and make sure
 to read the section "Incompatible changes since 2.8" if you upgrade
 from a previous wxWidgets release.
@@ -67,7 +73,7 @@ Platforms supported
 wxWidgets currently supports the following primary platforms:
 
 - Windows 95/98/ME, NT, 2000, XP, Vista, 7
-- Most Unix variants using the GTK+ toolkit (version 2.4 or newer)
+- Most Unix variants using the GTK+ toolkit (version 2.6 or newer)
 - Mac OS X (10.4 or newer) using either Carbon or Cocoa
 
 There is some support for the following platforms:
@@ -75,6 +81,7 @@ There is some support for the following platforms:
 - Most Unix variants with X11
 - Most Unix variants with Motif/Lesstif
 - Most Unix variants with GTK+ 1.2
+- Most Unix variants with GTK+ 3 (still in development)
 - OS/2
 - Windows CE (Pocket PC)
 
@@ -100,6 +107,11 @@ In addition to the sources, documentation in HTML, CHM and HTB
 (wxWidgets help viewer) formats is provided as well as an installer
 for Microsoft Windows. Notice that you will still need to compile
 wxWidgets even when using the installer.
+
+Experimentally, we also supply binaries of wxMSW libraries built
+with several versions of Microsoft Visual C++ compiler for this
+release. They are available in the "binaries" subdirectory, see
+the description of the files in the README file there.
 
 
 Installation
@@ -200,4 +212,4 @@ web site.
 
 Have fun!
 
-The wxWidgets Team, December 2011
+The wxWidgets Team, July 2012

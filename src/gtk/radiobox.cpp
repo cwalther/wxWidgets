@@ -18,7 +18,9 @@
     #include "wx/tooltip.h"
 #endif
 
+#include <gtk/gtk.h>
 #include "wx/gtk/private.h"
+#include "wx/gtk/private/gtk2-compat.h"
 
 #include <gdk/gdkkeysyms.h>
 #if GTK_CHECK_VERSION(3,0,0)
@@ -88,7 +90,7 @@ static gint gtk_radiobox_keypress_callback( GtkWidget *widget, GdkEventKey *gdk_
         // GDK reports GDK_ISO_Left_Tab for SHIFT-TAB
         new_event.SetDirection( (gdk_event->keyval == GDK_Tab) );
         // CTRL-TAB changes the (parent) window, i.e. switch notebook page
-        new_event.SetWindowChange( (gdk_event->state & GDK_CONTROL_MASK) );
+        new_event.SetWindowChange( (gdk_event->state & GDK_CONTROL_MASK) != 0 );
         new_event.SetCurrentFocus( rb );
         return rb->GetParent()->HandleWindowEvent(new_event);
     }
@@ -475,7 +477,7 @@ bool wxRadioBox::IsItemEnabled(unsigned int item) const
 
     // don't use GTK_WIDGET_IS_SENSITIVE() here, we want to return true even if
     // the parent radiobox is disabled
-    return gtk_widget_get_sensitive(GTK_WIDGET(button));
+    return gtk_widget_get_sensitive(GTK_WIDGET(button)) != 0;
 }
 
 bool wxRadioBox::Show(unsigned int item, bool show)
@@ -506,7 +508,7 @@ bool wxRadioBox::IsItemShown(unsigned int item) const
 
     GtkButton *button = GTK_BUTTON( node->GetData()->button );
 
-    return gtk_widget_get_visible(GTK_WIDGET(button));
+    return gtk_widget_get_visible(GTK_WIDGET(button)) != 0;
 }
 
 unsigned int wxRadioBox::GetCount() const
@@ -547,8 +549,8 @@ void wxRadioBox::DoApplyWidgetStyle(GtkRcStyle *style)
     {
         GtkWidget *widget = GTK_WIDGET( node->GetData()->button );
 
-        gtk_widget_modify_style( widget, style );
-        gtk_widget_modify_style(gtk_bin_get_child(GTK_BIN(widget)), style);
+        GTKApplyStyle(widget, style);
+        GTKApplyStyle(gtk_bin_get_child(GTK_BIN(widget)), style);
 
         node = node->GetNext();
     }

@@ -39,13 +39,6 @@
 
 #if 1 // wxUSE_BASE
 
-// Emit a beeeeeep
-void wxBell()
-{
-    // would be kSystemSoundID_UserPreferredAlert but since the headers aren't correct, add it manually
-    AudioServicesPlayAlertSound(0x00001000 );
-}
-
 // ----------------------------------------------------------------------------
 // Common Event Support
 // ----------------------------------------------------------------------------
@@ -91,6 +84,13 @@ void wxApp::DoCleanUp()
 
 #if wxUSE_GUI
 
+// Emit a beeeeeep
+void wxBell()
+{
+    // would be kSystemSoundID_UserPreferredAlert but since the headers aren't correct, add it manually
+    AudioServicesPlayAlertSound(0x00001000 );
+}
+
 // ----------------------------------------------------------------------------
 // Launch default browser
 // ----------------------------------------------------------------------------
@@ -116,6 +116,11 @@ extern wxFont* CreateSmallFont()
 extern UIFont* CreateUIFont( const wxFont& font )
 {
     return [UIFont fontWithName:wxCFStringRef(font.GetFaceName() ).AsNSString() size:font.GetPointSize()];
+}
+
+CFArrayRef CopyAvailableFontFamilyNames()
+{
+    return (CFArrayRef) [[UIFont familyNames] retain];
 }
 
 extern void DrawTextInContext( CGContextRef context, CGPoint where, UIFont *font, NSString* text )

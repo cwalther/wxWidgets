@@ -372,7 +372,7 @@ void wxLogGui::DoLogRecord(wxLogLevel level,
                 // find the top window and set it's status text if it has any
                 if ( pFrame == NULL ) {
                     wxWindow *pWin = wxTheApp->GetTopWindow();
-                    if ( pWin != NULL && pWin->IsKindOf(CLASSINFO(wxFrame)) ) {
+                    if ( wxDynamicCast(pWin, wxFrame) ) {
                         pFrame = (wxFrame *)pWin;
                     }
                 }
@@ -780,7 +780,7 @@ wxLogDialog::wxLogDialog(wxWindow *parent,
     btnSizer->Add(new wxButton(win, wxID_SAVE), flagsBtn);
 #endif // CAN_SAVE_FILES
 
-    paneSz->Add(btnSizer, wxSizerFlags().Right().Border(wxTOP));
+    paneSz->Add(btnSizer, wxSizerFlags().Right().Border(wxTOP|wxBOTTOM));
 #endif // wxUSE_CLIPBOARD || CAN_SAVE_FILES
 
     win->SetSizer(paneSz);

@@ -80,7 +80,9 @@ using namespace std;
 #ifdef __WXGTK__
 #include <gtk/gtk.h>
 #include "wx/fontutil.h"
+#ifndef __WXGTK3__
 #include "wx/gtk/dc.h"
+#endif
 #endif
 
 #ifdef __WXMAC__
@@ -214,7 +216,44 @@ private:
     cairo_matrix_t m_matrix ;
 } ;
 
-class WXDLLIMPEXP_CORE wxCairoPenData : public wxGraphicsObjectRefData
+// Common base class for pens and brushes.
+class wxCairoPenBrushBaseData : public wxGraphicsObjectRefData
+{
+public:
+    wxCairoPenBrushBaseData(wxGraphicsRenderer* renderer,
+                            const wxColour& col,
+                            bool isTransparent);
+    virtual ~wxCairoPenBrushBaseData();
+
+    virtual void Apply( wxGraphicsContext* context );
+
+protected:
+    // Call this to use the given bitmap as stipple. Bitmap must be non-null
+    // and valid.
+    void InitStipple(wxBitmap* bmp);
+
+    // Call this to use the given hatch style. Hatch style must be valid.
+    void InitHatch(wxHatchStyle hatchStyle);
+
+
+    double m_red;
+    double m_green;
+    double m_blue;
+    double m_alpha;
+
+    cairo_pattern_t* m_pattern;
+    class wxCairoBitmapData* m_bmpdata;
+
+private:
+    // Called once to allocate m_pattern if needed.
+    void InitHatchPattern(cairo_t* ctext);
+
+    wxHatchStyle m_hatchStyle;
+
+    wxDECLARE_NO_COPY_CLASS(wxCairoPenBrushBaseData);
+};
+
+class WXDLLIMPEXP_CORE wxCairoPenData : public wxCairoPenBrushBaseData
 {
 public:
     wxCairoPenData( wxGraphicsRenderer* renderer, const wxPen &pen );
@@ -228,11 +267,6 @@ public:
 private :
     double m_width;
 
-    double m_red;
-    double m_green;
-    double m_blue;
-    double m_alpha;
-
     cairo_line_cap_t m_cap;
     cairo_line_join_t m_join;
 
@@ -240,19 +274,14 @@ private :
     const double *m_lengths;
     double *m_userLengths;
 
-    wxPen m_pen;
-
     wxDECLARE_NO_COPY_CLASS(wxCairoPenData);
 };
 
-class WXDLLIMPEXP_CORE wxCairoBrushData : public wxGraphicsObjectRefData
+class WXDLLIMPEXP_CORE wxCairoBrushData : public wxCairoPenBrushBaseData
 {
 public:
     wxCairoBrushData( wxGraphicsRenderer* renderer );
     wxCairoBrushData( wxGraphicsRenderer* renderer, const wxBrush &brush );
-    ~wxCairoBrushData ();
-
-    virtual void Apply( wxGraphicsContext* context );
 
     void CreateLinearGradientBrush(wxDouble x1, wxDouble y1,
                                    wxDouble x2, wxDouble y2,
@@ -266,14 +295,6 @@ protected:
 
     // common part of Create{Linear,Radial}GradientBrush()
     void AddGradientStops(const wxGraphicsGradientStops& stops);
-
-private :
-    double m_red;
-    double m_green;
-    double m_blue;
-    double m_alpha;
-
-    cairo_pattern_t* m_brushPattern;
 };
 
 class wxCairoFontData : public wxGraphicsObjectRefData
@@ -367,7 +388,7 @@ public:
     wxCairoContext( wxGraphicsRenderer* renderer, const wxMemoryDC& dc );
     wxCairoContext( wxGraphicsRenderer* renderer, const wxPrinterDC& dc );
 #ifdef __WXGTK__
-    wxCairoContext( wxGraphicsRenderer* renderer, GdkDrawable *drawable );
+    wxCairoContext( wxGraphicsRenderer* renderer, GdkWindow *window );
 #endif
 #ifdef __WXMSW__
     wxCairoContext( wxGraphicsRenderer* renderer, HDC context );
@@ -487,6 +508,139 @@ private:
 };
 #endif // wxUSE_IMAGE
 
+// ----------------------------------------------------------------------------
+// wxCairoPenBrushBaseData implementation
+//-----------------------------------------------------------------------------
+
+wxCairoPenBrushBaseData::wxCairoPenBrushBaseData(wxGraphicsRenderer* renderer,
+                                                 const wxColour& col,
+                                                 bool isTransparent)
+    : wxGraphicsObjectRefData(renderer)
+{
+    m_hatchStyle = wxHATCHSTYLE_INVALID;
+    m_pattern = NULL;
+    m_bmpdata = NULL;
+
+    if ( isTransparent )
+    {
+        m_red =
+        m_green =
+        m_blue =
+        m_alpha = 0;
+    }
+    else // non-transparent
+    {
+        m_red = col.Red()/255.0;
+        m_green = col.Green()/255.0;
+        m_blue = col.Blue()/255.0;
+        m_alpha = col.Alpha()/255.0;
+    }
+}
+
+wxCairoPenBrushBaseData::~wxCairoPenBrushBaseData()
+{
+    if (m_bmpdata)
+    {
+        // Deleting the bitmap data also deletes the pattern referenced by
+        // m_pattern, so set it to NULL to avoid deleting it twice.
+        delete m_bmpdata;
+        m_pattern = NULL;
+    }
+    if (m_pattern)
+        cairo_pattern_destroy(m_pattern);
+}
+
+void wxCairoPenBrushBaseData::InitHatchPattern(cairo_t* ctext)
+{
+    cairo_surface_t* const
+        surface = cairo_surface_create_similar(
+                    cairo_get_target(ctext), CAIRO_CONTENT_COLOR_ALPHA, 10, 10
+                );
+
+    cairo_t* const cr = cairo_create(surface);
+    cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
+    cairo_set_line_width(cr, 1);
+    cairo_set_line_join(cr,CAIRO_LINE_JOIN_MITER);
+
+    switch ( m_hatchStyle )
+    {
+        case wxHATCHSTYLE_CROSS:
+            cairo_move_to(cr, 5, 0);
+            cairo_line_to(cr, 5, 10);
+            cairo_move_to(cr, 0, 5);
+            cairo_line_to(cr, 10, 5);
+            break;
+
+        case wxHATCHSTYLE_BDIAGONAL:
+            cairo_move_to(cr, 0, 10);
+            cairo_line_to(cr, 10, 0);
+            break;
+
+        case wxHATCHSTYLE_FDIAGONAL:
+            cairo_move_to(cr, 0, 0);
+            cairo_line_to(cr, 10, 10);
+            break;
+
+        case wxHATCHSTYLE_CROSSDIAG:
+            cairo_move_to(cr, 0, 0);
+            cairo_line_to(cr, 10, 10);
+            cairo_move_to(cr, 10, 0);
+            cairo_line_to(cr, 0, 10);
+            break;
+
+        case wxHATCHSTYLE_HORIZONTAL:
+            cairo_move_to(cr, 0, 5);
+            cairo_line_to(cr, 10, 5);
+            break;
+
+        case wxHATCHSTYLE_VERTICAL:
+            cairo_move_to(cr, 5, 0);
+            cairo_line_to(cr, 5, 10);
+            break;
+
+        default:
+            wxFAIL_MSG(wxS("Invalid hatch pattern style."));
+    }
+
+    cairo_set_source_rgba(cr, m_red, m_green, m_blue, m_alpha);
+    cairo_stroke(cr);
+
+    cairo_destroy(cr);
+
+    m_pattern = cairo_pattern_create_for_surface(surface);
+    cairo_surface_destroy(surface);
+    cairo_pattern_set_extend(m_pattern, CAIRO_EXTEND_REPEAT);
+}
+
+void wxCairoPenBrushBaseData::InitStipple(wxBitmap* bmp)
+{
+    wxCHECK_RET( bmp && bmp->IsOk(), wxS("Invalid stippled bitmap") );
+
+    m_bmpdata = new wxCairoBitmapData(GetRenderer(), *bmp);
+    m_pattern = m_bmpdata->GetCairoPattern();
+    cairo_pattern_set_extend(m_pattern, CAIRO_EXTEND_REPEAT);
+}
+
+void wxCairoPenBrushBaseData::InitHatch(wxHatchStyle hatchStyle)
+{
+    // We can't create m_pattern right now as we don't have the Cairo context
+    // needed for it, so just remember that we need to do it.
+    m_hatchStyle = hatchStyle;
+}
+
+void wxCairoPenBrushBaseData::Apply( wxGraphicsContext* context )
+{
+    cairo_t* const ctext = (cairo_t*) context->GetNativeContext();
+
+    if ( m_hatchStyle != wxHATCHSTYLE_INVALID && !m_pattern )
+        InitHatchPattern(ctext);
+
+    if ( m_pattern )
+        cairo_set_source(ctext, m_pattern);
+    else
+        cairo_set_source_rgba(ctext, m_red, m_green, m_blue, m_alpha);
+}
+
 //-----------------------------------------------------------------------------
 // wxCairoPenData implementation
 //-----------------------------------------------------------------------------
@@ -505,20 +659,14 @@ void wxCairoPenData::Init()
 }
 
 wxCairoPenData::wxCairoPenData( wxGraphicsRenderer* renderer, const wxPen &pen )
-: wxGraphicsObjectRefData(renderer)
+    : wxCairoPenBrushBaseData(renderer, pen.GetColour(), pen.IsTransparent())
 {
     Init();
-    m_pen = pen;
-    m_width = m_pen.GetWidth();
+    m_width = pen.GetWidth();
     if (m_width <= 0.0)
         m_width = 0.1;
 
-    m_red = m_pen.GetColour().Red()/255.0;
-    m_green = m_pen.GetColour().Green()/255.0;
-    m_blue = m_pen.GetColour().Blue()/255.0;
-    m_alpha = m_pen.GetColour().Alpha()/255.0;
-
-    switch ( m_pen.GetCap() )
+    switch ( pen.GetCap() )
     {
     case wxCAP_ROUND :
         m_cap = CAIRO_LINE_CAP_ROUND;
@@ -537,7 +685,7 @@ wxCairoPenData::wxCairoPenData( wxGraphicsRenderer* renderer, const wxPen &pen )
         break;
     }
 
-    switch ( m_pen.GetJoin() )
+    switch ( pen.GetJoin() )
     {
     case wxJOIN_BEVEL :
         m_join = CAIRO_LINE_JOIN_BEVEL;
@@ -574,7 +722,7 @@ wxCairoPenData::wxCairoPenData( wxGraphicsRenderer* renderer, const wxPen &pen )
         9.0 , 6.0 , 3.0 , 3.0
     };
 
-    switch ( m_pen.GetStyle() )
+    switch ( pen.GetStyle() )
     {
     case wxPENSTYLE_SOLID :
         break;
@@ -604,7 +752,7 @@ wxCairoPenData::wxCairoPenData( wxGraphicsRenderer* renderer, const wxPen &pen )
     case wxPENSTYLE_USER_DASH :
         {
             wxDash *wxdashes ;
-            m_count = m_pen.GetDashes( &wxdashes ) ;
+            m_count = pen.GetDashes( &wxdashes ) ;
             if ((wxdashes != NULL) && (m_count > 0))
             {
                 m_userLengths = new double[m_count] ;
@@ -621,54 +769,18 @@ wxCairoPenData::wxCairoPenData( wxGraphicsRenderer* renderer, const wxPen &pen )
             m_lengths = m_userLengths ;
         }
         break;
-    case wxPENSTYLE_STIPPLE :
-        {
-            /*
-            wxBitmap* bmp = pen.GetStipple();
-            if ( bmp && bmp->IsOk() )
-            {
-            wxDELETE( m_penImage );
-            wxDELETE( m_penBrush );
-            m_penImage = Bitmap::FromHBITMAP((HBITMAP)bmp->GetHBITMAP(),(HPALETTE)bmp->GetPalette()->GetHPALETTE());
-            m_penBrush = new TextureBrush(m_penImage);
-            m_pen->SetBrush( m_penBrush );
-            }
-            */
-        }
-        break;
-    default :
-        if ( m_pen.GetStyle() >= wxPENSTYLE_FIRST_HATCH
-            && m_pen.GetStyle() <= wxPENSTYLE_LAST_HATCH )
-        {
-            /*
-            wxDELETE( m_penBrush );
-            HatchStyle style = HatchStyleHorizontal;
-            switch( pen.GetStyle() )
-            {
-            case wxPENSTYLE_BDIAGONAL_HATCH :
-            style = HatchStyleBackwardDiagonal;
-            break ;
-            case wxPENSTYLE_CROSSDIAG_HATCH :
-            style = HatchStyleDiagonalCross;
-            break ;
-            case wxPENSTYLE_FDIAGONAL_HATCH :
-            style = HatchStyleForwardDiagonal;
-            break ;
-            case wxPENSTYLE_CROSS_HATCH :
-            style = HatchStyleCross;
-            break ;
-            case wxPENSTYLE_HORIZONTAL_HATCH :
-            style = HatchStyleHorizontal;
-            break ;
-            case wxPENSTYLE_VERTICAL_HATCH :
-            style = HatchStyleVertical;
-            break ;
 
-            }
-            m_penBrush = new HatchBrush(style,Color( pen.GetColour().Alpha() , pen.GetColour().Red() ,
-            pen.GetColour().Green() , pen.GetColour().Blue() ), Color.Transparent );
-            m_pen->SetBrush( m_penBrush )
-            */
+    case wxPENSTYLE_STIPPLE :
+    case wxPENSTYLE_STIPPLE_MASK :
+    case wxPENSTYLE_STIPPLE_MASK_OPAQUE :
+        InitStipple(pen.GetStipple());
+        break;
+
+    default :
+        if ( pen.GetStyle() >= wxPENSTYLE_FIRST_HATCH
+            && pen.GetStyle() <= wxPENSTYLE_LAST_HATCH )
+        {
+            InitHatch(static_cast<wxHatchStyle>(pen.GetStyle()));
         }
         break;
     }
@@ -676,9 +788,10 @@ wxCairoPenData::wxCairoPenData( wxGraphicsRenderer* renderer, const wxPen &pen )
 
 void wxCairoPenData::Apply( wxGraphicsContext* context )
 {
+    wxCairoPenBrushBaseData::Apply(context);
+
     cairo_t * ctext = (cairo_t*) context->GetNativeContext();
     cairo_set_line_width(ctext,m_width);
-    cairo_set_source_rgba(ctext,m_red,m_green, m_blue,m_alpha);
     cairo_set_line_cap(ctext,m_cap);
     cairo_set_line_join(ctext,m_join);
     cairo_set_dash(ctext,(double*)m_lengths,m_count,0.0);
@@ -689,83 +802,29 @@ void wxCairoPenData::Apply( wxGraphicsContext* context )
 //-----------------------------------------------------------------------------
 
 wxCairoBrushData::wxCairoBrushData( wxGraphicsRenderer* renderer )
-  : wxGraphicsObjectRefData( renderer )
+    : wxCairoPenBrushBaseData(renderer, wxColour(), true /* transparent */)
 {
     Init();
 }
 
-wxCairoBrushData::wxCairoBrushData( wxGraphicsRenderer* renderer, const wxBrush &brush )
-  : wxGraphicsObjectRefData(renderer)
+wxCairoBrushData::wxCairoBrushData( wxGraphicsRenderer* renderer,
+                                    const wxBrush &brush )
+    : wxCairoPenBrushBaseData(renderer, brush.GetColour(), brush.IsTransparent())
 {
     Init();
 
-    m_red = brush.GetColour().Red()/255.0;
-    m_green = brush.GetColour().Green()/255.0;
-    m_blue = brush.GetColour().Blue()/255.0;
-    m_alpha = brush.GetColour().Alpha()/255.0;
-    /*
-    if ( brush.GetStyle() == wxBRUSHSTYLE_SOLID)
+    switch ( brush.GetStyle() )
     {
-    m_brush = new SolidBrush( Color( brush.GetColour().Alpha() , brush.GetColour().Red() ,
-    brush.GetColour().Green() , brush.GetColour().Blue() ) );
-    }
-    else if ( brush.IsHatch() )
-    {
-    HatchStyle style = HatchStyleHorizontal;
-    switch( brush.GetStyle() )
-    {
-    case wxBRUSHSTYLE_BDIAGONAL_HATCH :
-    style = HatchStyleBackwardDiagonal;
-    break ;
-    case wxBRUSHSTYLE_CROSSDIAG_HATCH :
-    style = HatchStyleDiagonalCross;
-    break ;
-    case wxBRUSHSTYLE_FDIAGONAL_HATCH :
-    style = HatchStyleForwardDiagonal;
-    break ;
-    case wxBRUSHSTYLE_CROSS_HATCH :
-    style = HatchStyleCross;
-    break ;
-    case wxBRUSHSTYLE_HORIZONTAL_HATCH :
-    style = HatchStyleHorizontal;
-    break ;
-    case wxBRUSHSTYLE_VERTICAL_HATCH :
-    style = HatchStyleVertical;
-    break ;
+        case wxBRUSHSTYLE_STIPPLE:
+        case wxBRUSHSTYLE_STIPPLE_MASK:
+        case wxBRUSHSTYLE_STIPPLE_MASK_OPAQUE:
+            InitStipple(brush.GetStipple());
+            break;
 
-    }
-    m_brush = new HatchBrush(style,Color( brush.GetColour().Alpha() , brush.GetColour().Red() ,
-    brush.GetColour().Green() , brush.GetColour().Blue() ), Color.Transparent );
-    }
-    else
-    {
-    wxBitmap* bmp = brush.GetStipple();
-    if ( bmp && bmp->IsOk() )
-    {
-    wxDELETE( m_brushImage );
-    m_brushImage = Bitmap::FromHBITMAP((HBITMAP)bmp->GetHBITMAP(),(HPALETTE)bmp->GetPalette()->GetHPALETTE());
-    m_brush = new TextureBrush(m_brushImage);
-    }
-    }
-    */
-}
-
-wxCairoBrushData::~wxCairoBrushData ()
-{
-    if (m_brushPattern)
-        cairo_pattern_destroy(m_brushPattern);
-}
-
-void wxCairoBrushData::Apply( wxGraphicsContext* context )
-{
-    cairo_t * ctext = (cairo_t*) context->GetNativeContext();
-    if ( m_brushPattern )
-    {
-        cairo_set_source(ctext,m_brushPattern);
-    }
-    else
-    {
-        cairo_set_source_rgba(ctext,m_red,m_green, m_blue,m_alpha);
+        default:
+            if ( brush.IsHatch() )
+                InitHatch(static_cast<wxHatchStyle>(brush.GetStyle()));
+            break;
     }
 }
 
@@ -781,7 +840,7 @@ void wxCairoBrushData::AddGradientStops(const wxGraphicsGradientStops& stops)
 
         cairo_pattern_add_color_stop_rgba
         (
-            m_brushPattern,
+            m_pattern,
             stop.GetPosition(),
             col.Red()/255.0,
             col.Green()/255.0,
@@ -790,7 +849,7 @@ void wxCairoBrushData::AddGradientStops(const wxGraphicsGradientStops& stops)
         );
     }
 
-    wxASSERT_MSG(cairo_pattern_status(m_brushPattern) == CAIRO_STATUS_SUCCESS,
+    wxASSERT_MSG(cairo_pattern_status(m_pattern) == CAIRO_STATUS_SUCCESS,
                  wxT("Couldn't create cairo pattern"));
 }
 
@@ -799,7 +858,7 @@ wxCairoBrushData::CreateLinearGradientBrush(wxDouble x1, wxDouble y1,
                                             wxDouble x2, wxDouble y2,
                                             const wxGraphicsGradientStops& stops)
 {
-    m_brushPattern = cairo_pattern_create_linear(x1,y1,x2,y2);
+    m_pattern = cairo_pattern_create_linear(x1,y1,x2,y2);
 
     AddGradientStops(stops);
 }
@@ -810,14 +869,15 @@ wxCairoBrushData::CreateRadialGradientBrush(wxDouble xo, wxDouble yo,
                                             wxDouble radius,
                                             const wxGraphicsGradientStops& stops)
 {
-    m_brushPattern = cairo_pattern_create_radial(xo,yo,0.0,xc,yc,radius);
+    m_pattern = cairo_pattern_create_radial(xo,yo,0.0,xc,yc,radius);
 
     AddGradientStops(stops);
 }
 
 void wxCairoBrushData::Init()
 {
-    m_brushPattern = NULL;
+    m_pattern = NULL;
+    m_bmpdata = NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -1264,7 +1324,7 @@ wxCairoBitmapData::wxCairoBitmapData( wxGraphicsRenderer* renderer, const wxBitm
     // image has alpha (or a mask represented as alpha) then we'll use a
     // different format and iterator than if it doesn't...
     cairo_format_t bufferFormat = bmp.GetDepth() == 32
-#ifdef __WXGTK__
+#if defined(__WXGTK__) && !defined(__WXGTK3__)
                                             || bmp.GetMask()
 #endif
                                         ? CAIRO_FORMAT_ARGB32
@@ -1337,7 +1397,7 @@ wxCairoBitmapData::wxCairoBitmapData( wxGraphicsRenderer* renderer, const wxBitm
             p.OffsetY(pixData, 1);
         }
     }
-#ifdef __WXMSW__
+#if defined(__WXMSW__) || defined(__WXGTK3__)
     // if there is a mask, set the alpha bytes in the target buffer to 
     // fully transparent or fully opaque
     if (bmpSource.GetMask())
@@ -1636,7 +1696,11 @@ wxCairoContext::wxCairoContext( wxGraphicsRenderer* renderer, const wxWindowDC& 
     Init( cairo_create(m_mswSurface) );
 #endif
 
-#ifdef __WXGTK20__
+#ifdef __WXGTK3__
+    cairo_t* cr = static_cast<cairo_t*>(dc.GetImpl()->GetCairoContext());
+    if (cr)
+        Init(cr);
+#elif defined __WXGTK20__
     wxGTKDCImpl *impldc = (wxGTKDCImpl*) dc.GetImpl();
     Init( gdk_cairo_create( impldc->GetGDKWindow() ) );
 
@@ -1707,7 +1771,11 @@ wxCairoContext::wxCairoContext( wxGraphicsRenderer* renderer, const wxMemoryDC& 
     }
 #endif
     
-#ifdef __WXGTK20__
+#ifdef __WXGTK3__
+    cairo_t* cr = static_cast<cairo_t*>(dc.GetImpl()->GetCairoContext());
+    if (cr)
+        Init(cr);
+#elif defined __WXGTK20__
     wxGTKDCImpl *impldc = (wxGTKDCImpl*) dc.GetImpl();
     Init( gdk_cairo_create( impldc->GetGDKWindow() ) );
 
@@ -1737,15 +1805,20 @@ wxCairoContext::wxCairoContext( wxGraphicsRenderer* renderer, const wxMemoryDC& 
 }
 
 #ifdef __WXGTK20__
-wxCairoContext::wxCairoContext( wxGraphicsRenderer* renderer, GdkDrawable *drawable )
+wxCairoContext::wxCairoContext( wxGraphicsRenderer* renderer, GdkWindow *window )
 : wxGraphicsContext(renderer)
 {
-    Init( gdk_cairo_create( drawable ) );
+    Init( gdk_cairo_create( window ) );
 
+#ifdef __WXGTK3__
+    m_width = gdk_window_get_width(window);
+    m_height = gdk_window_get_height(window);
+#else
     int width, height;
-    gdk_drawable_get_size( drawable, &width, &height );
+    gdk_drawable_get_size(window, &width, &height);
     m_width = width;
     m_height = height;
+#endif
 }
 #endif
 
@@ -2112,14 +2185,33 @@ void wxCairoContext::GetTextExtent( const wxString &str, wxDouble *width, wxDoub
 void wxCairoContext::GetPartialTextExtents(const wxString& text, wxArrayDouble& widths) const
 {
     widths.Empty();
-    widths.Add(0, text.length());
-
     wxCHECK_RET( !m_font.IsNull(), wxT("wxCairoContext::GetPartialTextExtents - no valid font set") );
-
-    if (text.empty())
-        return;
-
+#if __WXGTK__
+    const wxCharBuffer data = text.utf8_str();
+    int w = 0;
+    if (data.length())
+    {
+        PangoLayout* layout = pango_cairo_create_layout(m_context);
+        const wxFont& font = static_cast<wxCairoFontData*>(m_font.GetRefData())->GetFont();
+        pango_layout_set_font_description(layout, font.GetNativeFontInfo()->description);
+        pango_layout_set_text(layout, data, data.length());
+        PangoLayoutIter* iter = pango_layout_get_iter(layout);
+        PangoRectangle rect;
+        do {
+            pango_layout_iter_get_cluster_extents(iter, NULL, &rect);
+            w += rect.width;
+            widths.Add(PANGO_PIXELS(w));
+        } while (pango_layout_iter_next_cluster(iter));
+        pango_layout_iter_free(iter);
+        g_object_unref(layout);
+    }
+    size_t i = widths.GetCount();
+    const size_t len = text.length();
+    while (i++ < len)
+        widths.Add(PANGO_PIXELS(w));
+#else
     // TODO
+#endif
 }
 
 void * wxCairoContext::GetNativeContext()
@@ -2391,7 +2483,7 @@ wxGraphicsContext * wxCairoRenderer::CreateContextFromNativeWindow( void * windo
 {
     ENSURE_LOADED_OR_RETURN(NULL);
 #ifdef __WXGTK__
-    return new wxCairoContext(this,(GdkDrawable*)window);
+    return new wxCairoContext(this, static_cast<GdkWindow*>(window));
 #else
     wxUnusedVar(window);
     return NULL;
@@ -2410,9 +2502,10 @@ wxGraphicsContext * wxCairoRenderer::CreateMeasuringContext()
     ENSURE_LOADED_OR_RETURN(NULL);
 #ifdef __WXGTK__
     return CreateContextFromNativeWindow(gdk_get_default_root_window());
-#endif
+#else
     return NULL;
     // TODO
+#endif
 }
 
 wxGraphicsContext * wxCairoRenderer::CreateContext( wxWindow* window )

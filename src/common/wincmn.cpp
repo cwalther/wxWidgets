@@ -649,7 +649,7 @@ static bool wxHasRealChildren(const wxWindowBase* win)
         wxWindow *win = node->GetData();
         if ( !win->IsTopLevel() && win->IsShown()
 #if wxUSE_SCROLLBAR
-            && !win->IsKindOf(CLASSINFO(wxScrollBar))
+            && !wxDynamicCast(win, wxScrollBar)
 #endif
             )
             realChildCount ++;
@@ -1268,15 +1268,14 @@ bool wxWindowBase::IsDescendant(wxWindowBase* win) const
     // Iterate until we find this window in the parent chain or exhaust it.
     while ( win )
     {
-        wxWindow* const parent = win->GetParent();
-        if ( parent == this )
+        if ( win == this )
             return true;
 
         // Stop iterating on reaching the top level window boundary.
-        if ( parent->IsTopLevel() )
+        if ( win->IsTopLevel() )
             break;
 
-        win = parent;
+        win = win->GetParent();
     }
 
     return false;
@@ -1439,7 +1438,11 @@ wxEvtHandler *wxWindowBase::PopEventHandler(bool deleteHandler)
         "the first handler of the wxWindow stack should have non-NULL next handler" );
 
     firstHandler->SetNextHandler(NULL);
-    secondHandler->SetPreviousHandler(NULL);
+
+    // It is harmless but useless to unset the previous handler of the window
+    // itself as it's always NULL anyhow, so don't do this.
+    if ( secondHandler != this )
+        secondHandler->SetPreviousHandler(NULL);
 
     // now firstHandler is completely unlinked; set secondHandler as the new window event handler
     SetEventHandler(secondHandler);
@@ -2744,6 +2747,8 @@ wxSize wxWindowBase::GetDlgUnitBase() const
 {
     const wxWindowBase * const parent = wxGetTopLevelParent((wxWindow*)this);
 
+    wxCHECK_MSG( parent, wxDefaultSize, wxS("Must have TLW parent") );
+
     if ( !parent->m_font.IsOk() )
     {
         // Default GUI font is used. This is the most common case, so
@@ -3507,7 +3512,7 @@ wxAccStatus wxWindowAccessible::GetLocation(wxRect& rect, int elementId)
     if (win)
     {
         rect = win->GetRect();
-        if (win->GetParent() && !win->IsKindOf(CLASSINFO(wxTopLevelWindow)))
+        if (win->GetParent() && !wxDynamicCast(win, wxTopLevelWindow))
             rect.SetPosition(win->GetParent()->ClientToScreen(rect.GetPosition()));
         return wxACC_OK;
     }
@@ -3626,7 +3631,7 @@ wxAccStatus wxWindowAccessible::GetName(int childId, wxString* name)
     // accessible classes, one for each kind of wxWidgets
     // control or window.
 #if wxUSE_BUTTON
-    if (GetWindow()->IsKindOf(CLASSINFO(wxButton)))
+    if (wxDynamicCast(GetWindow(), wxButton))
         title = ((wxButton*) GetWindow())->GetLabel();
     else
 #endif
@@ -3785,14 +3790,14 @@ wxAccStatus wxWindowAccessible::GetRole(int childId, wxAccRole* role)
     if (childId > 0)
         return wxACC_NOT_IMPLEMENTED;
 
-    if (GetWindow()->IsKindOf(CLASSINFO(wxControl)))
+    if (wxDynamicCast(GetWindow(), wxControl))
         return wxACC_NOT_IMPLEMENTED;
 #if wxUSE_STATUSBAR
-    if (GetWindow()->IsKindOf(CLASSINFO(wxStatusBar)))
+    if (wxDynamicCast(GetWindow(), wxStatusBar))
         return wxACC_NOT_IMPLEMENTED;
 #endif
 #if wxUSE_TOOLBAR
-    if (GetWindow()->IsKindOf(CLASSINFO(wxToolBar)))
+    if (wxDynamicCast(GetWindow(), wxToolBar))
         return wxACC_NOT_IMPLEMENTED;
 #endif
 
@@ -3817,15 +3822,15 @@ wxAccStatus wxWindowAccessible::GetState(int childId, long* state)
     if (childId > 0)
         return wxACC_NOT_IMPLEMENTED;
 
-    if (GetWindow()->IsKindOf(CLASSINFO(wxControl)))
+    if (wxDynamicCast(GetWindow(), wxControl))
         return wxACC_NOT_IMPLEMENTED;
 
 #if wxUSE_STATUSBAR
-    if (GetWindow()->IsKindOf(CLASSINFO(wxStatusBar)))
+    if (wxDynamicCast(GetWindow(), wxStatusBar))
         return wxACC_NOT_IMPLEMENTED;
 #endif
 #if wxUSE_TOOLBAR
-    if (GetWindow()->IsKindOf(CLASSINFO(wxToolBar)))
+    if (wxDynamicCast(GetWindow(), wxToolBar))
         return wxACC_NOT_IMPLEMENTED;
 #endif
 

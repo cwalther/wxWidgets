@@ -56,6 +56,10 @@
     #define WXUNUSED_GTK(identifier)    identifier
 #endif
 
+#ifdef __WXOSX__
+#include "wx/osx/private.h"
+#endif
+
 // Required for wxIs... functions
 #include <ctype.h>
 
@@ -406,6 +410,10 @@ void wxGridCellTextEditor::DoCreate(wxWindow* parent,
                                wxDefaultPosition, wxDefaultSize,
                                style);
 
+#ifdef __WXOSX__
+    wxWidgetImpl* impl = m_control->GetPeer();
+    impl->SetNeedsFocusRect(false);
+#endif
     // set max length allowed in the textctrl, if the parameter was set
     if ( m_maxChars != 0 )
     {
@@ -451,6 +459,12 @@ void wxGridCellTextEditor::SetSize(const wxRect& rectOrig)
 
     rect.width -= 2;
     rect.height -= 2;
+#elif defined(__WXOSX__)
+    rect.x += 1;
+    rect.y += 1;
+    
+    rect.width -= 1;
+    rect.height -= 1;
 #else
     int extra_x = ( rect.x > 2 ) ? 2 : 1;
     int extra_y = ( rect.y > 2 ) ? 2 : 1;
@@ -1582,6 +1596,14 @@ void wxGridCellEnumEditor::BeginEdit(int row, int col, wxGrid* grid)
     wxASSERT_MSG(m_control,
                  wxT("The wxGridCellEnumEditor must be Created first!"));
 
+    wxGridCellEditorEvtHandler* evtHandler = NULL;
+    if (m_control)
+        evtHandler = wxDynamicCast(m_control->GetEventHandler(), wxGridCellEditorEvtHandler);
+
+    // Don't immediately end if we get a kill focus event within BeginEdit
+    if (evtHandler)
+        evtHandler->SetInSetFocus(true);
+
     wxGridTableBase *table = grid->GetTable();
 
     if ( table->CanGetValueAs(row, col, wxGRID_VALUE_NUMBER) )
@@ -1604,6 +1626,22 @@ void wxGridCellEnumEditor::BeginEdit(int row, int col, wxGrid* grid)
     Combo()->SetSelection(m_index);
     Combo()->SetFocus();
 
+#ifdef __WXOSX_COCOA__
+    // This is a work around for the combobox being simply dismissed when a
+    // choice is made in it under OS X. The bug is almost certainly due to a
+    // problem in focus events generation logic but it's not obvious to fix and
+    // for now this at least allows to use wxGrid.
+    Combo()->Popup();
+#endif
+
+    if (evtHandler)
+    {
+        // When dropping down the menu, a kill focus event
+        // happens after this point, so we can't reset the flag yet.
+#if !defined(__WXGTK20__)
+        evtHandler->SetInSetFocus(false);
+#endif
+    }
 }
 
 bool wxGridCellEnumEditor::EndEdit(int WXUNUSED(row),

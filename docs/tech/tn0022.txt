@@ -7,6 +7,12 @@ Before making the release
 Update docs/readme.txt. Please review its contents in addition to just
 changing the version number.
 
+Put a date on the release line in docs/changes.txt.
+
+Update the date in the manual (docs/doxygen/mainpages/manual.h).
+
+Update the release announcement post in docs/publicity/announce.txt.
+
 
 Creating release files
 ----------------------
@@ -69,6 +75,9 @@ being "default downloads" for the appropriate platforms (.zip or .exe for MSW,
 .tar.bz2 for everything else) as otherwise SourceForge would continue to suggest
 people to download old files.
 
+Also upload docs/release_files.mdwn as README.md to display it by default when
+its directory is viewed on the web.
+
 Also upload the files to the FTP mirror at ftp.wxwidgets.org (ask Chris for
 access if you don't have it).
 
@@ -78,7 +87,7 @@ Create http://docs.wxwidgets.org/x.y.z/ (ask Bryan to do it if not done yet).
 Announcement
 ------------
 
-Post announcement at least to wx-announce@googlegroups.com.
+Post docs/publicity/announce.txt at least to wx-announce@googlegroups.com.
 
 TODO: where else to announce it?
 
@@ -92,8 +101,8 @@ Version updates
 ---------------
 
 Trac: mark the milestone corresponding to the release as completed and add a
-new version for it to allow reporting bugs against it (ask Vadim or Robin to do
-it).
+new version for it to allow reporting bugs against it and create the next
+milestone (ask Vadim or Robin to do it or to get admin password).
 
 Run misc/scripts/inc_release to increment micro version, i.e. replace x.y.z
 with x.y.z+1 (minor or major versions updates require manual intervention).

@@ -450,10 +450,8 @@ public:
     wxListMainWindow();
     wxListMainWindow( wxWindow *parent,
                       wxWindowID id,
-                      const wxPoint& pos = wxDefaultPosition,
-                      const wxSize& size = wxDefaultSize,
-                      long style = 0,
-                      const wxString &name = wxT("listctrlmainwindow") );
+                      const wxPoint& pos,
+                      const wxSize& size );
 
     virtual ~wxListMainWindow();
 
@@ -646,7 +644,7 @@ public:
     long FindItem( const wxPoint& pt );
     long HitTest( int x, int y, int &flags ) const;
     void InsertItem( wxListItem &item );
-    void InsertColumn( long col, const wxListItem &item );
+    long InsertColumn( long col, const wxListItem &item );
     int GetItemWidthWithImage(wxListItem * item);
     void SortItems( wxListCtrlCompare fn, wxIntPtr data );
 

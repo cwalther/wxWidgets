@@ -58,6 +58,15 @@ def getXcodePath():
     return getoutput("xcode-select -print-path")
 
 
+def getVisCVersion():
+    text = getoutput("cl.exe")
+    if 'Version 15' in text:
+        return '90'
+    # TODO: Add more tests to get the other versions...
+    else:
+        return 'FIXME'
+    
+
 def exitIfError(code, msg):
     if code != 0:
         print(msg)
@@ -266,12 +275,11 @@ def main(scriptName, args):
             wxpy_configure_opts.append("--with-sdl")
             wxpy_configure_opts.append("--with-gnomeprint")
                                         
-        # Ensure that the Carbon build stays compatible back to 10.4 and
-        # for the Cocoa build allow running on 10.5 and newer.  We only add
-        # them to the wxpy options because this is a hard-requirement for
-        # wxPython, but other cases it is optional and is left up to the
-        # developer.  TODO: there should be a command line option to set
-        # the SDK...
+        # Try to use use lowest available SDK back to 10.5. Both Carbon and
+        # Cocoa builds require at least the 10.5 SDK now. We only add it to
+        # the wxpy options because this is a hard-requirement for wxPython,
+        # but other cases it is optional and is left up to the developer.
+        # TODO: there should be a command line option to set the SDK...
         if sys.platform.startswith("darwin"):
             xcodePath = getXcodePath()
             sdks = [
@@ -403,6 +411,7 @@ def main(scriptName, args):
     
             if options.wxpython:
                 args.append("OFFICIAL_BUILD=1")
+                args.append("COMPILER_VERSION=%s" % getVisCVersion())
                 args.append("SHARED=1")
                 args.append("MONOLITHIC=0")
                 args.append("USE_OPENGL=1")
